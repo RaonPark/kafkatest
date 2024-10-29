@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: kafkatest
+  kafka:
+    producer:
+      bootstrap-servers: kafka1:9092,kafka2:9092,kafka3:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: -1
+      compression-type: lz4
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      bootstrap-servers: kafka1:9092,kafka2:9092,kafka3:9092
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    admin:
+      properties:
+        bootstrap-servers: kafka1:9092,kafka2:9092,kafka3:9092
+        security-protocol: PLAINTEXT
+
+
+  datasource:
+    driver-class-name: "com.mysql.cj.jdbc.Driver"
+    url: jdbc:mysql://db:3306/testDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    jdbc:
+      dialect: mysql
