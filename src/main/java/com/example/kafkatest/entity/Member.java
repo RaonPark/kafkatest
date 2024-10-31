@@ -1,6 +1,7 @@
 package com.example.kafkatest.entity;
 
 import com.example.kafkatest.support.BaseTimeEntity;
+import com.example.kafkatest.support.RandomNumberGenerator;
 import com.example.kafkatest.vo.MemberVo;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -43,6 +44,6 @@ public class Member extends BaseTimeEntity {
         address = memberVo.getAddress();
         email = memberVo.getEmail();
         password = memberVo.getPassword();
-        uniqueNumber = "1928";
+        uniqueNumber = RandomNumberGenerator.generateRandom4Numbers();
     }
 }

@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final MemberRepository memberRepository;
     private final KafkaTemplate<String, PutMoneyRequest> kafkaTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public MakeAccountDto.MakeAccountResponse makeAccount(MakeAccountDto.MakeAccountRequest request) {
         Member member = Optional.of(memberRepository.findByUserId(request.getUserId()))
@@ -86,7 +88,7 @@ public class AccountService {
                 Optional.of(accountRepository.findBalanceByAccountNumber(request.getAccountNumber()))
                         .orElseThrow(NoSuchElementException::new);
 
-        log.info("토픽 = {}, 통장 번호 = {}, 잔액 = {}\n", "anotherId", request.getAccountNumber(), balance);
+        log.info("토픽 = {}, 통장 번호 = {}, 잔액 = {}\n", "PutMoney", request.getAccountNumber(), balance);
     }
 
     @KafkaListener(groupId = "moneyToDisplay", topics = "PutMoney", containerFactory = "kafkaListenerForBalanceDisplay")
@@ -95,11 +97,7 @@ public class AccountService {
         BigDecimal balance = Optional.of(accountRepository.findBalanceByAccountNumber(request.getAccountNumber()))
                 .orElseThrow(NoSuchElementException::new);
 
-        log.info("토픽 = {}, 통장 번호 = {}, 잔액 = {}\n", "kafkatest", request.getAccountNumber(), balance.add(request.getMoney()));
-        getAccountBalance(balance.add(request.getMoney()));
-    }
-
-    public String getAccountBalance(BigDecimal balance) {
-        return balance.toString();
+        log.info("토픽 = {}, 통장 번호 = {}, 잔액 = {}\n", "PutMoney", request.getAccountNumber(), balance.add(request.getMoney()));
+        redisTemplate.opsForValue().append("balance", balance.add(request.getMoney()).toString());
     }
 }

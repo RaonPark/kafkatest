@@ -130,12 +130,27 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 1234
     depends_on:
+      - redis
       - db
       - kafka1
       - kafka2
       - kafka3
     networks:
       - dockertest
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - dockertest
+
 
 networks:
   dockertest:

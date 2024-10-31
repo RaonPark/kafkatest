@@ -8,4 +8,8 @@ public class RandomNumberGenerator {
     public static String generateRandom6Numbers() {
         return String.valueOf(100000 + random.nextInt(900000));
     }
+
+    public static String generateRandom4Numbers() {
+        return String.valueOf(1000 + random.nextInt(9000));
+    }
 }
