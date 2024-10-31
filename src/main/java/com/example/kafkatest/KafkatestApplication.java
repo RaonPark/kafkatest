@@ -5,10 +5,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 // @ConfigurationProperties를 사용해서 가져오려면 이걸 사용해야한다.
 @EnableConfigurationProperties
 @SpringBootApplication
+@EnableJpaAuditing
 public class KafkatestApplication {
 
     public static void main(String[] args) {

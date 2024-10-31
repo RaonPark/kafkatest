@@ -41,4 +41,13 @@ public class KafkaTopicConfig {
                 .build();
     }
 
+    @Bean
+    public NewTopic balanceTopic() {
+        return TopicBuilder
+                .name("PutMoney")
+                .replicas(2)
+                .partitions(10)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .build();
+    }
 }
