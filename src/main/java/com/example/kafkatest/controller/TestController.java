@@ -4,12 +4,14 @@ import com.example.kafkatest.dto.MakeAccountDto;
 import com.example.kafkatest.dto.request.PutMoneyRequest;
 import com.example.kafkatest.entity.Account;
 import com.example.kafkatest.entity.Member;
+import com.example.kafkatest.repository.AccountRepository;
 import com.example.kafkatest.repository.MemberRepository;
 import com.example.kafkatest.service.AccountService;
 import com.example.kafkatest.vo.AccountVo;
 import com.example.kafkatest.vo.MemberVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class TestController {
     private final MemberRepository memberRepository;
     private final AccountService accountService;
+    private final AccountRepository accountRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
     @GetMapping("/integrateTestWithJMeter")
@@ -58,5 +61,11 @@ public class TestController {
                 .build());
 
         return redisTemplate.opsForValue().get("balance");
+    }
+
+    @DeleteMapping("/cleanup")
+    public void cleanup() {
+        accountRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 }
