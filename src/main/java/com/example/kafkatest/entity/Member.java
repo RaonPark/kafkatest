@@ -5,10 +5,14 @@ import com.example.kafkatest.support.RandomNumberGenerator;
 import com.example.kafkatest.vo.MemberVo;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
+@Getter
 @Entity
 // Entity로 지정된 클래스는 항상 pub혹은 protected no-args constructor가 있어야 한다.
 @NoArgsConstructor
@@ -36,6 +40,9 @@ public class Member extends BaseTimeEntity {
 
     @Column(nullable = false, length = 4)
     private String uniqueNumber;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final Set<ChatroomMember> chatroomMembers = new HashSet<>();
 
     @Builder
     private Member(MemberVo memberVo) {

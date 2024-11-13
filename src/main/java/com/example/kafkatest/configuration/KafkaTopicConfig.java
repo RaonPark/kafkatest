@@ -50,4 +50,14 @@ public class KafkaTopicConfig {
                 .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
                 .build();
     }
+
+    @Bean
+    public NewTopic chatTopic() {
+        return TopicBuilder
+                .name("chat")
+                .replicas(2)
+                .partitions(5)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .build();
+    }
 }
