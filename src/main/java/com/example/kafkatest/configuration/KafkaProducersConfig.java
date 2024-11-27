@@ -59,13 +59,18 @@ public class KafkaProducersConfig {
         return new DefaultKafkaProducerFactory<>(configMap, new StringSerializer(), new JsonSerializer<>());
     }
 
-    @Bean
-    public KafkaTemplate<String, PutMoneyRequest> jsonKafkaTemplate(KafkaProducersProperties properties) {
-        return new KafkaTemplate<>(jsonProducerFactory(properties));
-    }
+//    @Bean
+//    public KafkaTemplate<String, PutMoneyRequest> jsonKafkaTemplate(KafkaProducersProperties properties) {
+//        return new KafkaTemplate<>(jsonProducerFactory(properties));
+//    }
+//
+//    @Bean
+//    public KafkaTemplate<String, ChatMessage> chatKafkaTemplate(KafkaProducersProperties properties) {
+//        return new KafkaTemplate<>(jsonProducerFactory(properties));
+//    }
 
     @Bean
-    public KafkaTemplate<String, ChatMessage> chatKafkaTemplate(KafkaProducersProperties properties) {
+    public <T> KafkaTemplate<String, T> genericJsonKafkaTemplate(KafkaProducersProperties properties) {
         return new KafkaTemplate<>(jsonProducerFactory(properties));
     }
 

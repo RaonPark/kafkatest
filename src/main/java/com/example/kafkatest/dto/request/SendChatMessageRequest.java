@@ -16,4 +16,5 @@ public class SendChatMessageRequest {
     private String message;
     private String emoticon;
     private long chatRoomId;
+    private int order;
 }

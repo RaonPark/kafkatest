@@ -3,8 +3,10 @@ package com.example.kafkatest.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 
+import java.io.Serializable;
+
 @Entity
-public class ChatroomMember {
+public class ChatroomMember implements Serializable {
     @EmbeddedId
     private ChatroomMemberId id;
 

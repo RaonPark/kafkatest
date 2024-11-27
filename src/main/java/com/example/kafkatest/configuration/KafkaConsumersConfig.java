@@ -1,5 +1,6 @@
 package com.example.kafkatest.configuration;
 
+import com.example.kafkatest.dto.ChatMessageKafkaDTO;
 import com.example.kafkatest.dto.request.PutMoneyRequest;
 import com.example.kafkatest.entity.ChatMessage;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -33,6 +35,7 @@ public class KafkaConsumersConfig {
         private final Class<StringDeserializer> valueDeserializer;
         private final String autoOffsetReset;
         private final boolean enableAutoCommit;
+        private final List<String> groupIds;
     }
 
     @Bean
@@ -132,10 +135,36 @@ public class KafkaConsumersConfig {
         return listenerContainerFactory;
     }
 
+        @Bean
+        public ConsumerFactory<String, ChatMessage> chatConsumerFactory(KafkaConsumerProperties properties) {
+            Map<String, Object> configMap = new HashMap<>();
+            configMap.put(ConsumerConfig.GROUP_ID_CONFIG, "chat");
+            configMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.bootstrapServers);
+            configMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, properties.keyDeserializer);
+            configMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+            configMap.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+            configMap.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+            configMap.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+            configMap.put("spring.kafka.consumer.properties.spring.json.encoding", "UTF-8");
+            configMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.enableAutoCommit);
+            configMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.autoOffsetReset);
+
+            return new DefaultKafkaConsumerFactory<>(configMap, new StringDeserializer(), new JsonDeserializer<>(ChatMessage.class, false));
+        }
+
     @Bean
-    public ConsumerFactory<String, ChatMessage> chatConsumerFactory(KafkaConsumerProperties properties) {
+    public ConcurrentKafkaListenerContainerFactory<String, ChatMessage> kafkaListenerContainerFactoryForChat(
+            KafkaConsumerProperties properties) {
+        ConcurrentKafkaListenerContainerFactory<String, ChatMessage> containerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        containerFactory.setConsumerFactory(chatConsumerFactory(properties));
+        return containerFactory;
+    }
+
+    @Bean
+    public <T> ConsumerFactory<String, T> genericKafkaConsumerFactory(KafkaConsumerProperties properties, Class<T> classType) {
         Map<String, Object> configMap = new HashMap<>();
-        configMap.put(ConsumerConfig.GROUP_ID_CONFIG, "chat");
+        configMap.put(ConsumerConfig.GROUP_ID_CONFIG, properties.groupIds.get(1));
         configMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.bootstrapServers);
         configMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, properties.keyDeserializer);
         configMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
@@ -146,15 +175,14 @@ public class KafkaConsumersConfig {
         configMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.enableAutoCommit);
         configMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.autoOffsetReset);
 
-        return new DefaultKafkaConsumerFactory<>(configMap, new StringDeserializer(), new JsonDeserializer<>(ChatMessage.class, false));
+        return new DefaultKafkaConsumerFactory<>(configMap, new StringDeserializer(), new JsonDeserializer<>(classType, false));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ChatMessage> kafkaListenerContainerFactoryForChat(
-            KafkaConsumerProperties properties) {
-        ConcurrentKafkaListenerContainerFactory<String, ChatMessage> containerFactory =
+    public ConcurrentKafkaListenerContainerFactory<String, ChatMessageKafkaDTO> kafkaListenerContainerFactoryForKVSW(KafkaConsumerProperties properties) {
+        ConcurrentKafkaListenerContainerFactory<String, ChatMessageKafkaDTO> containerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        containerFactory.setConsumerFactory(chatConsumerFactory(properties));
+        containerFactory.setConsumerFactory(genericKafkaConsumerFactory(properties, ChatMessageKafkaDTO.class));
         return containerFactory;
     }
 }

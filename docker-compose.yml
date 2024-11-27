@@ -111,6 +111,7 @@ services:
       MYSQL_DATABASE: testDB
       MYSQL_USER: user
       MYSQL_ROOT_PASSWORD: 1234
+      REWRITE_BATCHED_STATEMENTS: true
     volumes:
       - /var/lib/mysql
     networks:

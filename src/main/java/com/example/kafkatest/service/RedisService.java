@@ -34,4 +34,25 @@ public class RedisService {
             throw new RuntimeException("Find에서 ObjectMapper오류!");
         }
     }
+
+    public <HK, V> void saveHash(String key, HK hashKey, V value) {
+        try {
+            String jsonValue = objectMapper.writeValueAsString(value);
+            redisTemplate.opsForHash().put(key, hashKey, jsonValue);
+        } catch(JsonProcessingException ex) {
+            throw new RuntimeException("ObjectMapper 에러!");
+        }
+    }
+
+    public <HK, V> V findHash(String key, HK hashKey, Class<V> valueType) {
+        try {
+            String jsonValue = (String) redisTemplate.opsForHash().get(key, hashKey);
+            if(jsonValue == null) {
+                return null;
+            }
+            return objectMapper.readValue(jsonValue, valueType);
+        } catch(JsonProcessingException ex) {
+            throw new RuntimeException("ObjectMapper 에러!");
+        }
+    }
 }

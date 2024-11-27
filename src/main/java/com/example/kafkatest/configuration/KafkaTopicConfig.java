@@ -60,4 +60,14 @@ public class KafkaTopicConfig {
                 .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
                 .build();
     }
+
+    @Bean
+    public NewTopic kvswTopic() {
+        return TopicBuilder
+                .name("kvsw")
+                .replicas(3)
+                .partitions(10)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .build();
+    }
 }
