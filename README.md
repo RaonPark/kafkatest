@@ -10,3 +10,8 @@
 - 하나는 DB, 하나는 컨트롤러에서 값을 반환하도록 한다.
 - producer의 처리량 증가 로직을 사용하여 jMeter로 얼마나 달라졌는지 확인한다.
 - https://blog.naver.com/sumin9278/223647883850
+
+## Kafka와 Repository를 사용하는 메세징의 속도 차이
+## Kafka의 ACKS 설정에 의한 속도 차이 및 ISR의 개수에 의한 속도 차이
+- https://blog.naver.com/sumin9278/223674974332
+
