@@ -17,8 +17,8 @@
 
 
 ## Kafka Streams를 학습해보자.
-### Kafka Streams 개요와 Join
+### 1. Kafka Streams 개요와 Join
 - https://blog.naver.com/sumin9278/223683764086
 
-### Kafka Streams의 Reduce, Aggregation, Windowing
+### 2. Kafka Streams의 Reduce, Aggregation, Windowing
 - https://blog.naver.com/sumin9278/223687561101
