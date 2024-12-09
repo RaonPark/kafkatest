@@ -12,6 +12,13 @@
 - https://blog.naver.com/sumin9278/223647883850
 
 ## Kafka와 Repository를 사용하는 메세징의 속도 차이
-## Kafka의 ACKS 설정에 의한 속도 차이 및 ISR의 개수에 의한 속도 차이
+### Kafka의 ACKS 설정에 의한 속도 차이 및 ISR의 개수에 의한 속도 차이
 - https://blog.naver.com/sumin9278/223674974332
 
+
+## Kafka Streams를 학습해보자.
+### Kafka Streams 개요와 Join
+- https://blog.naver.com/sumin9278/223683764086
+
+### Kafka Streams의 Reduce, Aggregation, Windowing
+- https://blog.naver.com/sumin9278/223687561101
