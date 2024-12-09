@@ -38,6 +38,9 @@ dependencies {
     annotationProcessor 'com.querydsl:querydsl-apt'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+
+    // apache kafka
+    implementation 'org.apache.kafka:kafka-streams'
 }
 
 tasks.named('test') {
