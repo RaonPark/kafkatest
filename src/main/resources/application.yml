@@ -28,6 +28,8 @@ spring:
       properties:
         bootstrap-servers: kafka1:9092,kafka2:9092,kafka3:9092
         security-protocol: PLAINTEXT
+    streams:
+      bootstrap-servers: kafka1:9092,kafka2:9092:kafka3:9092
 
   datasource:
     driver-class-name: "com.mysql.cj.jdbc.Driver"

@@ -1,7 +1,10 @@
+import com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.4'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'com.github.davidmc24.gradle.plugin.avro' version '1.9.1'
 }
 
 group = 'com.example'
@@ -15,6 +18,12 @@ java {
 
 repositories {
     mavenCentral()
+}
+
+// avro 설정
+avro {
+    stringType = "CharSequence"
+    outputCharacterEncoding = "UTF-8"
 }
 
 dependencies {
@@ -41,6 +50,9 @@ dependencies {
 
     // apache kafka
     implementation 'org.apache.kafka:kafka-streams'
+
+    // avro
+    implementation 'org.apache.avro:avro:1.12.0'
 }
 
 tasks.named('test') {
