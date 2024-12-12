@@ -1,30 +1,29 @@
 package com.example.kafkatest.configuration;
 
-import com.example.kafkatest.entity.Articles;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import avro.articles.TrendingArticles;
+import com.example.kafkatest.support.AvroService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
+import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.Aggregator;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.TimeWindows;
-import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.state.WindowStore;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.config.KafkaStreamsConfiguration;
-import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerde;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +31,8 @@ import java.util.Map;
 // Spring for Apache Kafka provides the @EnableKafkaStreams annotation,
 // which you should place on a @Configuration class.
 @EnableKafkaStreams
+@EnableKafka
+@Slf4j
 public class KafkaStreamsConfig {
 
     // StreamsBuilder 를 생성해준다.
@@ -45,9 +46,11 @@ public class KafkaStreamsConfig {
         configMap.put(StreamsConfig.APPLICATION_ID_CONFIG, "trending.articles.app");
         configMap.put(StreamsConfig.CLIENT_ID_CONFIG, "T.A.C");
         configMap.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
-        configMap.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, JsonSerde.class);
+        configMap.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        configMap.put("schema.registry.url", "http://schema-registry:8081");
         configMap.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10000);
         configMap.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 3);
+        configMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         // JsonDeserializer 설정
         configMap.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
@@ -58,8 +61,39 @@ public class KafkaStreamsConfig {
 
 
     @Bean
-    public KStream<String, String> likedArticleStream(StreamsBuilder streamsBuilder, ObjectMapper objectMapper) {
-        KStream<String, String> stream = streamsBuilder.stream("liked-topic");
+    public KStream<Long, TrendingArticles> trendingArticlesStream(StreamsBuilder streamsBuilder, ObjectMapper objectMapper) {
+        // Avro Configuration
+        Map<String, Object> avroConfigMap = new HashMap<>();
+        avroConfigMap.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema-registry:8081");
+        avroConfigMap.put("specific.avro.reader", true);
+        SpecificAvroSerde<TrendingArticles> trendingArticlesAvroSerde = AvroService.getSpecificAvroSerdeForValue(avroConfigMap);
+
+        // Get KStream of trending articles.
+        // with 1 hour windowing and grace period 30 seconds
+        KStream<Long, TrendingArticles> stream =
+                streamsBuilder.stream("articles.topic", Consumed.with(Serdes.Long(), trendingArticlesAvroSerde));
+        Duration windowSize = Duration.ofMinutes(1);
+        Duration gracePeriod = Duration.ofSeconds(30);
+
+        Aggregator<Long, TrendingArticles, Long> aggregator = (key, value, vAgg) -> vAgg + value.getLikes();
+
+        KTable<Windowed<Long>, Long> likedCountTable =
+                stream.groupBy((key, value) -> value.getArticleId(), Grouped.with(Serdes.Long(), trendingArticlesAvroSerde))
+                .windowedBy(TimeWindows.ofSizeAndGrace(windowSize, gracePeriod))
+                .aggregate(
+                        () -> 0L,
+                        aggregator,
+                        Materialized.<Long, Long, WindowStore<Bytes, byte[]>>as("TRENDING_ARTICLES")
+                                .withKeySerde(Serdes.Long())
+                                .withValueSerde(Serdes.Long())
+                );
+
+        likedCountTable.toStream()
+                .map((wk, value) -> KeyValue.pair(wk.key(), new TrendingArticles(wk.key(), value)))
+//                .peek((key, value) -> log.info("there's articleId = {} and likes = {}", key, value))
+                .to("trending.articles.topic", Produced.with(Serdes.Long(), trendingArticlesAvroSerde));
+
+        stream.print(Printed.toSysOut());
 
         return stream;
     }

@@ -1,0 +1,21 @@
+POST http://localhost:8080/makeArticle
+Content-Type: application/json
+
+{
+  "title": "hello for test",
+  "content": "test for content",
+  "keyword": "#test"
+}
+
+> {%
+    client.global.set("articleId", response.body);
+    console.log(client.global.get("articleId"));
+%}
+
+###
+GET http://localhost:8080/likeArticle?articleId={{articleId}}
+
+###
+GET http://localhost:8080/getTrendingArticles
+
+> {% client.log("trendingArticles: ", response.body) %}

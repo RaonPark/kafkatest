@@ -1,14 +1,21 @@
 package com.example.kafkatest.configuration;
 
+import avro.articles.TrendingArticles;
 import com.example.kafkatest.dto.request.PutMoneyRequest;
 import com.example.kafkatest.entity.ChatMessage;
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import lombok.RequiredArgsConstructor;
+import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -77,5 +84,28 @@ public class KafkaProducersConfig {
     @Bean
     public KafkaTemplate<String, String> kafkaTemplateForTestMessage(KafkaProducersProperties properties) {
         return new KafkaTemplate<>(producerFactoryForStringValue(properties));
+    }
+
+    @Bean
+    public ProducerFactory<Long, TrendingArticles> avroRecordProducerFactory(KafkaProducersProperties properties) {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.bootstrapServers);
+        configMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
+        configMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        // 조금 더 빠른 처리량을 위해 설정합니다.
+        configMap.put(ProducerConfig.ACKS_CONFIG, properties.acks);
+        configMap.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024));
+        configMap.put(ProducerConfig.LINGER_MS_CONFIG, "10");
+        configMap.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema-registry:8081");
+        // json의 경우는 snappy가 좋은 압축방법입니다.
+        configMap.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+
+        return new DefaultKafkaProducerFactory<>(configMap);
+    }
+
+    @Bean
+    @Primary
+    public KafkaTemplate<Long, TrendingArticles> avroRecordKafkaTemplate(KafkaProducersProperties properties) {
+        return new KafkaTemplate<>(avroRecordProducerFactory(properties));
     }
 }

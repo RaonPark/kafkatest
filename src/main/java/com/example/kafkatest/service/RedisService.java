@@ -1,11 +1,18 @@
 package com.example.kafkatest.service;
 
+import avro.articles.TrendingArticles;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.avro.specific.SpecificRecord;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +61,23 @@ public class RedisService {
         } catch(JsonProcessingException ex) {
             throw new RuntimeException("ObjectMapper 에러!");
         }
+    }
+
+    public List<TrendingArticles> getTrendingArticles(String key) {
+        HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+
+        Map<String, String> entries = hashOperations.entries(key);
+
+        List<TrendingArticles> trendingArticles = new ArrayList<>();
+        entries.forEach((hashKey, value) -> {
+            try {
+                Long parsedValue = objectMapper.readValue(value, Long.class);
+                trendingArticles.add(new TrendingArticles(Long.parseLong(hashKey), parsedValue));
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return trendingArticles;
     }
 }

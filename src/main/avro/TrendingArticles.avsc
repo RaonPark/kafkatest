@@ -1,0 +1,15 @@
+{
+  "name": "TrendingArticles",
+  "namespace": "avro.articles",
+  "type": "record",
+  "fields": [
+    {
+      "name": "articleId",
+      "type": "long"
+    },
+    {
+      "name": "likes",
+      "type": "long"
+    }
+  ]
+}

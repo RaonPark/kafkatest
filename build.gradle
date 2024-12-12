@@ -18,6 +18,10 @@ java {
 
 repositories {
     mavenCentral()
+    // io.confluent 패키지를 위한 maven 주소
+    maven {
+        url "https://packages.confluent.io/maven"
+    }
 }
 
 // avro 설정
@@ -53,6 +57,7 @@ dependencies {
 
     // avro
     implementation 'org.apache.avro:avro:1.12.0'
+    implementation 'io.confluent:kafka-streams-avro-serde:7.8.0'
 }
 
 tasks.named('test') {
