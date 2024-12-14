@@ -72,8 +72,8 @@ public class KafkaStreamsConfig {
         // with 1 hour windowing and grace period 30 seconds
         KStream<Long, TrendingArticles> stream =
                 streamsBuilder.stream("articles.topic", Consumed.with(Serdes.Long(), trendingArticlesAvroSerde));
-        Duration windowSize = Duration.ofMinutes(1);
-        Duration gracePeriod = Duration.ofSeconds(30);
+        Duration windowSize = Duration.ofMinutes(3);
+        Duration gracePeriod = Duration.ofSeconds(10);
 
         Aggregator<Long, TrendingArticles, Long> aggregator = (key, value, vAgg) -> vAgg + value.getLikes();
 
