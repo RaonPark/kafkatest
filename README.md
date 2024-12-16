@@ -10,7 +10,12 @@
 제가 카프카를 사용한 이유는 유저 알고리즘이 무엇보다 중요해진 시점에 대용량 데이터들을 어떻게 하면 빠르게 처리하며 의미있는 데이터로 만들지 궁금했기 때문입니다.<br>
 예를 들어, 미적분 문제를 풀 때, 문제를 푸는 사람이 1분 내로 문제를 꾸준히 푼다고 해보겠습니다. 그러면 매우 쉬운 문제라고 판단할 수 있겠죠? 그러면 문제의 난이도를 높일 수 있습니다.<br>
 만약 위와 같은 상황에서 문제의 난이도를 높이지 못한다면 문제가 너무 시시하다고 생각하여 앱을 종료하거나 사용하지 않을 수 있습니다.<br>
-따라서, 유저의 데이터를 실시간으로 다루고, 빠르게 처리하는데 카프카가 매우 좋은 메소드라고 생각했습니다. 따라서 이번 프로젝트에서는 카프카와 카프카 스트림즈를 학습하여 추후에 실제로 사용해볼 수 있도록 하였습니다.
+따라서, 유저의 데이터를 실시간으로 다루고, 빠르게 처리하는데 카프카가 매우 좋은 메소드라고 생각했습니다. 그래서 이번 프로젝트에서는 카프카와 카프카 스트림즈를 학습하여 추후에 실제로 사용해볼 수 있도록 하였습니다.<br>
+
+I have been curious about how to process massive data and make it meaningful to own user. Because nowadays, improving algorithm for users is most significant challenge.<br>
+For example, there is user solves a problem one minutes continuously. Then, You could think the problems should be easy for that user and give him harder problems.<br>
+If you do not give him more challengable problems, the user might lose his interest and away from your app.<br>
+So, with this thought, I think that Kafka is well suited for dealing with user data in real-time. Therefore, in this project, I'm now studying Kafka and Kafka Streams and programming various kinds of circumstances.<br>
 
 
 ## 두 개의 컨슈머 같은 토픽을 사용 (2 Consumers for same topic)
