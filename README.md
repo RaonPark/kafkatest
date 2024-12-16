@@ -45,5 +45,8 @@ So, with this thought, I think that Kafka is well suited for dealing with user d
 ### 3. Kafka Streams Support in Spring!
 - https://blog.naver.com/sumin9278/223693447181
 
+### 4. Kafka Streams의 시간에 대해 알아보자. (Time Concept of Kafka Streams)
+- https://blog.naver.com/sumin9278/223695569635
+
 ## Apache Avro를 사용하여 더 빠른 직렬화/역직렬화를 해보자. (Let's fast Serializing and Deserializing with Apache Avro)
 - https://blog.naver.com/sumin9278/223689945739
