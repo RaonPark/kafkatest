@@ -1,0 +1,24 @@
+{
+  "namespace": "com.example",
+  "name": "ProblemSolving",
+  "type": "record",
+  "fields": [
+    {
+      "name": "problemId",
+      "type": "long"
+    },
+    {
+      "name": "userId",
+      "type": "long"
+    },
+    {
+      "name": "solved",
+      "type": "int",
+    },
+    {
+      "name": "solvedTime",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    }
+  ]
+}
