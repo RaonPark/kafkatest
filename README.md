@@ -40,5 +40,5 @@
 ### 3. Kafka Streams Support in Spring!
 - https://blog.naver.com/sumin9278/223693447181
 
-## Apache Avro를 사용하여 더 빠른 직렬화/역직렬화를 해보자. (Let's fast Serializing and Deserializing using Apache Avro)
+## Apache Avro를 사용하여 더 빠른 직렬화/역직렬화를 해보자. (Let's fast Serializing and Deserializing with Apache Avro)
 - https://blog.naver.com/sumin9278/223689945739
