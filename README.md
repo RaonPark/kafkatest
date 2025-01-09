@@ -1,12 +1,14 @@
-## 사용 기술 스택
+## 사용 기술 스택 (Technical Stack)
 - Spring Boot
 - Docker / Docker-compose
 - Apache Kafka / Apache Kafka Streams
 - Redis(standalone)
 - MySQL
 - Kafdrop - for visualizing kafka partitions, topic
+- Apache Avro
+- Intellij HTTP
 
-## 카프카를 왜 사용할까? (Why Kafka?)
+## 🤔 카프카를 왜 사용할까? (Why Kafka?) 
 제가 카프카를 사용한 이유는 유저 알고리즘이 무엇보다 중요해진 시점에 대용량 데이터들을 어떻게 하면 빠르게 처리하며 의미있는 데이터로 만들지 궁금했기 때문입니다.<br>
 예를 들어, 미적분 문제를 풀 때, 문제를 푸는 사람이 1분 내로 문제를 꾸준히 푼다고 해보겠습니다. 그러면 매우 쉬운 문제라고 판단할 수 있겠죠? 그러면 문제의 난이도를 높일 수 있습니다.<br>
 만약 위와 같은 상황에서 문제의 난이도를 높이지 못한다면 문제가 너무 시시하다고 생각하여 앱을 종료하거나 사용하지 않을 수 있습니다.<br>
@@ -38,15 +40,26 @@ So, with this thought, I think that Kafka is well suited for dealing with user d
 ## Kafka Streams를 학습해보자. (Let's study Kafka Streams)
 ### 1. Kafka Streams 개요와 Join (Overview of KafkaStreams and JOIN)
 - https://blog.naver.com/sumin9278/223683764086
+- Keyword 🔑 : KStream, KTable, Global KTable, Producer, Consumer, Topology, Join
 
 ### 2. Kafka Streams의 Reduce, Aggregation, Windowing (Reduce, Aggregation, Windowing in Kafka Streams)
 - https://blog.naver.com/sumin9278/223687561101
+- Keyword 🔑 : Stateful operation, Aggregation, Reduction, Hopping Window, Tumbling Window, Session Window, Grace Period
 
 ### 3. Kafka Streams Support in Spring!
 - https://blog.naver.com/sumin9278/223693447181
 
 ### 4. Kafka Streams의 시간에 대해 알아보자. (Time Concept of Kafka Streams)
 - https://blog.naver.com/sumin9278/223695569635
+- Keyword 🔑 : Event Time, Ingestion Time, Stream Time, Grace Period, Windowing
+
+### 5. Kafka Streams Processor API
+- Kafka Streams의 Kafka DSL와 Processor API의 이해 (Learning about Kafka Streams Processor API)
+  - https://blog.naver.com/sumin9278/223696697841
+  - Keyword 🔑 : Processor API, Topology, Kafka DSL, Stream Time, Punctuation
+- Kafka Streams Processor API를 실제 예시와 함께 사용해보자. (Let's using Processor API with pratical example)
+  - https://blog.naver.com/sumin9278/223720073988
 
 ## Apache Avro를 사용하여 더 빠른 직렬화/역직렬화를 해보자. (Let's fast Serializing and Deserializing with Apache Avro)
 - https://blog.naver.com/sumin9278/223689945739
+- Apache Avro and JSON comparison
