@@ -1,6 +1,7 @@
 package com.example.kafkatest.configuration;
 
 import avro.articles.TrendingArticles;
+import com.example.ProblemSolving;
 import com.example.kafkatest.dto.request.PutMoneyRequest;
 import com.example.kafkatest.entity.ChatMessage;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
@@ -107,5 +108,27 @@ public class KafkaProducersConfig {
     @Primary
     public KafkaTemplate<Long, TrendingArticles> avroRecordKafkaTemplate(KafkaProducersProperties properties) {
         return new KafkaTemplate<>(avroRecordProducerFactory(properties));
+    }
+
+    @Bean
+    public ProducerFactory<String, ProblemSolving> problemSolvingProducerFactory(KafkaProducersProperties properties) {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.bootstrapServers);
+        configMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        // 조금 더 빠른 처리량을 위해 설정합니다.
+        configMap.put(ProducerConfig.ACKS_CONFIG, properties.acks);
+        configMap.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024));
+        configMap.put(ProducerConfig.LINGER_MS_CONFIG, "20");
+        configMap.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema-registry:8081");
+        // json의 경우는 snappy가 좋은 압축방법입니다.
+        configMap.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+
+        return new DefaultKafkaProducerFactory<>(configMap);
+    }
+
+    @Bean
+    public KafkaTemplate<String, ProblemSolving> problemSolvingKafkaTemplate(KafkaProducersProperties properties) {
+        return new KafkaTemplate<>(problemSolvingProducerFactory(properties));
     }
 }

@@ -63,6 +63,39 @@ public class RedisService {
         }
     }
 
+    public <V> void saveList(String key, V value) {
+        try {
+            String jsonValue = objectMapper.writeValueAsString(value);
+            redisTemplate.opsForList().rightPush(key, jsonValue);
+        } catch(JsonProcessingException e) {
+            throw new RuntimeException("ObjectMapper 에러!");
+        }
+    }
+
+    public <V> List<V> findList(String key, Class<V> classType) {
+        try {
+            Long listSize = redisTemplate.opsForList().size(key);
+            if(listSize == null)
+                return List.of();
+
+            List<String> redisList = redisTemplate.opsForList().range(key, 0, listSize);
+            List<V> resultList = new ArrayList<>();
+            if(redisList != null) {
+                redisList.forEach((value) -> {
+                    try {
+                        resultList.add(objectMapper.readValue(value, classType));
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("ObjectMapper 에러!");
+                    }
+                });
+            }
+
+            return resultList;
+        } catch(NullPointerException e) {
+            return List.of();
+        }
+    }
+
     public List<TrendingArticles> getTrendingArticles(String key) {
         HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
 
@@ -79,5 +112,12 @@ public class RedisService {
         });
 
         return trendingArticles;
+    }
+
+    public void incrOne(String key) {
+        if(redisTemplate.opsForValue().get(key) != null)
+            redisTemplate.opsForValue().increment(key);
+        else
+            redisTemplate.opsForValue().set(key, String.valueOf(1));
     }
 }

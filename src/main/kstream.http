@@ -19,3 +19,13 @@ GET http://localhost:8080/likeArticle?articleId={{articleId}}
 GET http://localhost:8080/getTrendingArticles
 
 > {% client.log("trendingArticles: ", response.body) %}
+
+###
+POST http://localhost:8080/problemSolving
+Content-Type: application/json
+
+{
+  "userId": 123,
+  "problemId": 123,
+  "solved": 1
+}

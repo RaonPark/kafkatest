@@ -13,7 +13,7 @@
     },
     {
       "name": "solved",
-      "type": "int",
+      "type": "int"
     },
     {
       "name": "solvedTime",

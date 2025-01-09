@@ -1,6 +1,8 @@
 package com.example.kafkatest.configuration;
 
 import avro.articles.TrendingArticles;
+import com.example.ProblemSolving;
+import com.example.kafkatest.support.ProblemSolvingProcessor;
 import com.example.kafkatest.support.AvroService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
@@ -9,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.state.WindowStore;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @Configuration
 // Spring for Apache Kafka provides the @EnableKafkaStreams annotation,
@@ -96,5 +97,60 @@ public class KafkaStreamsConfig {
         stream.print(Printed.toSysOut());
 
         return stream;
+    }
+
+    @Bean
+    public Topology problemSolvingStream() {
+        Topology topology = buildTopology();
+
+        Map<String, Object> configMap = new HashMap<>();
+        // Kafka Streams 설정
+        configMap.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka1:9092,kafka2:9092,kafka3:9092");
+        configMap.put(StreamsConfig.APPLICATION_ID_CONFIG, "problem.solving.app");
+        configMap.put(StreamsConfig.CLIENT_ID_CONFIG, "P.S.A");
+        configMap.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
+        configMap.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        configMap.put("schema.registry.url", "http://schema-registry:8081");
+        configMap.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10000);
+        configMap.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 3);
+        configMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        // JsonDeserializer 설정
+        configMap.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        configMap.put("spring.kafka.consumer.properties.spring.json.encoding", "UTF-8");
+
+        Properties kafkaStreamsProperties = new Properties();
+        kafkaStreamsProperties.putAll(configMap);
+
+        final KafkaStreams kafkaStreams = new KafkaStreams(topology, kafkaStreamsProperties);
+        kafkaStreams.start();
+
+        return topology;
+    }
+
+    private Topology buildTopology() {
+        final Topology topology = new Topology();
+        final Map<String, Object> configMap =
+                new HashMap<>(Collections.singletonMap("schema.registry.url", "http://schema-registry:8081"));
+        configMap.put("specific.avro.reader", true);
+        final SpecificAvroSerde<ProblemSolving> problemSolvingSpecificAvroSerde =
+                AvroService.getSpecificAvroSerdeForValue(configMap);
+
+        topology.addSource("source-node",
+                Serdes.String().deserializer(),
+                problemSolvingSpecificAvroSerde.deserializer(),
+                "solving.problem.topic");
+
+        topology.addProcessor("processor-node",
+                new ProblemSolvingProcessor(),
+                "source-node");
+
+        topology.addSink("sink-node",
+                "solved.problem.topic",
+                Serdes.String().serializer(),
+                Serdes.Integer().serializer(),
+                "processor-node");
+
+        return topology;
     }
 }
