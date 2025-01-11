@@ -1,3 +1,5 @@
+# Playground For Kafka and Kafka Streams
+
 ## 사용 기술 스택 (Technical Stack)
 - Spring Boot
 - Docker / Docker-compose
@@ -7,6 +9,7 @@
 - Kafdrop - for visualizing kafka partitions, topic
 - Apache Avro
 - Intellij HTTP
+- Kotlin -> https://github.com/RaonPark/jwtauth
 
 ## 🤔 카프카를 왜 사용할까? (Why Kafka?) 
 제가 카프카를 사용한 이유는 유저 알고리즘이 무엇보다 중요해진 시점에 대용량 데이터들을 어떻게 하면 빠르게 처리하며 의미있는 데이터로 만들지 궁금했기 때문입니다.<br>
@@ -19,8 +22,8 @@ For example, there is user solves a problem one minutes continuously. Then, You 
 If you do not give him more challengable problems, the user might lose his interest and away from your app.<br>
 So, with this thought, I think that Kafka is well suited for dealing with user data in real-time. Therefore, in this project, I'm now studying Kafka and Kafka Streams and programming various kinds of circumstances.<br>
 
-
-## 두 개의 컨슈머 같은 토픽을 사용 (2 Consumers for same topic)
+## Kafka
+### 두 개의 컨슈머 같은 토픽을 사용 (2 Consumers for same topic)
 1. 두 개의 서로 다른 컨슈머를 만들고 같은 토픽을 참조하도록 한다.
 - 구축 방법
   - Kafka Raft 모드로 3개의 노드를 사용하여 클러스터를 구성한다.
@@ -33,9 +36,15 @@ So, with this thought, I think that Kafka is well suited for dealing with user d
 - producer의 처리량 증가 로직을 사용하여 jMeter로 얼마나 달라졌는지 확인한다.
 - https://blog.naver.com/sumin9278/223647883850
 
-## Kafka와 Repository를 사용하는 메세징의 속도 차이 (throughputs differ from Kafka ACKS and ISRs)
-### Kafka의 ACKS 설정에 의한 속도 차이 및 ISR의 개수에 의한 속도 차이
-- https://blog.naver.com/sumin9278/223674974332
+### Kafka와 Repository를 사용하는 메세징의 속도 차이 (throughputs differ from Kafka ACKS and ISRs)
+- Kafka의 ACKS 설정에 의한 속도 차이 및 ISR의 개수에 의한 속도 차이
+  - https://blog.naver.com/sumin9278/223674974332
+
+### Kafka의 속도와 메세징 Ordering (Theory of How Kafka Is Fast and Message Ordering In Kafka)
+- Kafka는 어떻게 속도가 빠른지, 그리고 메세지 순서를 어떻게 보장받는지에 관한 실험과 이론 
+  - https://blog.naver.com/sumin9278/223722742802
+  - 소스코드 : https://github.com/RaonPark/jwtauth
+    - Kotlin을 사용하여 Kafka를 구축하였음. 
 
 ## Kafka Streams를 학습해보자. (Let's study Kafka Streams)
 ### 1. Kafka Streams 개요와 Join (Overview of KafkaStreams and JOIN)
