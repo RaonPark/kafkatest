@@ -18,7 +18,7 @@
 따라서, 유저의 데이터를 실시간으로 다루고, 빠르게 처리하는데 카프카가 매우 좋은 메소드라고 생각했습니다. 그래서 이번 프로젝트에서는 카프카와 카프카 스트림즈를 학습하여 추후에 실제로 사용해볼 수 있도록 하였습니다.<br>
 
 I have been curious about how to process massive data and make it meaningful to own user. Because nowadays, improving algorithm for users is most significant challenge.<br>
-For example, there is user solves a problem one minutes continuously. Then, You could think the problems should be easy for that user and give him harder problems.<br>
+For example, there is user solves a problem one minutes continuously. Then, You could think the problems might be easy for that user and give him harder problems.<br>
 If you do not give him more challengable problems, the user might lose his interest and away from your app.<br>
 So, with this thought, I think that Kafka is well suited for dealing with user data in real-time. Therefore, in this project, I'm now studying Kafka and Kafka Streams and programming various kinds of circumstances.<br>
 
