@@ -1,0 +1,28 @@
+{
+  "namespace": "com.example",
+  "name": "Payments",
+  "type": "record",
+  "fields": [
+    {
+      "name": "user",
+      "type": "long"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    },
+    {
+      "name": "currency",
+      "type": "string"
+    },
+    {
+      "name": "paymentsStamp",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    },
+    {
+      "name": "isCredit",
+      "type": "boolean"
+    }
+  ]
+}

@@ -14,24 +14,22 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
-@RequiredArgsConstructor
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class ArticlesService {
     private final ArticlesRepository articlesRepository;
     private final LikedArticlesRepository likedArticlesRepository;
     private final RedisService redisService;
     private final TrendingKeywordRedisService trendingKeywordRedisService;
     private final MemberRepository memberRepository;
-    private final KafkaTemplate<Long, TrendingArticles> trendingArticlesKafkaTemplate;
-
+    private final KafkaTemplate<String, TrendingArticles> trendingArticlesKafkaTemplate;
     public Long createArticle(CreateArticleRequest request) {
         Articles article = Articles.buildWithCreateArticleRequest().createArticleRequest(request).build();
 
@@ -65,7 +63,7 @@ public class ArticlesService {
 
     public void likeArticle(Long articleId) {
         trendingArticlesKafkaTemplate.send("articles.topic",
-                articleId, new TrendingArticles(articleId, 1L));
+                articleId.toString(), new TrendingArticles(articleId, 1L));
     }
 
     @KafkaListener(topics = "trending.articles.topic", groupId = "trending.articles.group", containerFactory = "kafkaListenerContainerFactoryForTrendingArticles")

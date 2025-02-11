@@ -31,7 +31,7 @@ public class ChatService {
     private final MemberRepository memberRepository;
     private final ChatroomMemberRepository chatRoomMemberRepository;
     private final RedisService redisService;
-    private final KafkaTemplate<String, ChatMessage> kafkaTemplate;
+    private final KafkaTemplate<String, ChatMessage> jsonKafkaTemplate;
 
     @Transactional
     public long createChatRoom(MakeChatRoomRequest request) {
@@ -83,7 +83,7 @@ public class ChatService {
         ChatMessage chatMessage = ChatMessage.builder().sendChatMessageRequest(request).chatRoom(chatRoom).build();
 
         ChatMessage saved = chatMessageRepository.save(chatMessage);
-        kafkaTemplate.send("chat", chatMessage);
+        jsonKafkaTemplate.send("chat", chatMessage);
     }
 
     @Transactional
