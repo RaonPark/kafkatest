@@ -44,7 +44,11 @@ So, with this thought, I think that Kafka is well suited for dealing with user d
 - Kafka는 어떻게 속도가 빠른지, 그리고 메세지 순서를 어떻게 보장받는지에 관한 실험과 이론 
   - https://blog.naver.com/sumin9278/223722742802
   - 소스코드 : https://github.com/RaonPark/jwtauth
-    - Kotlin을 사용하여 Kafka를 구축하였음. 
+    - Kotlin을 사용하여 Kafka를 구축하였음.
+   
+### Kafka DLQ(DLT) (What is Dead-Letter-Queue AKA DLQ? And how can we implements DLQ using Spring Kafka?)
+- DLQ가 무엇이고 Spring Kafka는 어떻게 DLQ를 구현할 수 있는가에 대한 이론과 예시
+  - https://blog.naver.com/sumin9278/223763871059
 
 ## Kafka Streams를 학습해보자. (Let's study Kafka Streams)
 ### 1. Kafka Streams 개요와 Join (Overview of KafkaStreams and JOIN)
