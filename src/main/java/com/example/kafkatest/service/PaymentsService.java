@@ -1,6 +1,7 @@
 package com.example.kafkatest.service;
 
 import com.example.Payments;
+import com.example.kafkatest.dto.request.PaymentsRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
@@ -12,6 +13,8 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,7 +25,7 @@ public class PaymentsService {
             kafkaTemplate = "paymentsKafkaTemplate",
             dltStrategy = DltStrategy.FAIL_ON_ERROR
     )
-    @KafkaListener(topics = { "payments" }, groupId = "payments")
+    @KafkaListener(topics = { "payments" }, groupId = "payments", containerFactory = "paymentsConcurrentKafkaListenerContainerFactory")
     public void handlePayment(Payments payments,
                               @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
                               @Header(KafkaHeaders.RECEIVED_KEY) String key
@@ -35,12 +38,29 @@ public class PaymentsService {
     }
 
     @DltHandler
-    public void handleDltPayments(Payments payments, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+    public void handleDltPayments(Payments payments,
+                                  @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         log.info("Event on dlt topic = {}, payload = {}", topic, payments);
+
+        payments.setPaymentsId("retry-payments");
+
+        paymentsKafkaTemplate.send("payments", "retry-payments", payments);
     }
 
-    public void sendPayment(Payments payments) {
+    public void sendPayment(PaymentsRequestDTO payments) {
         log.info("send payments = {}", payments);
-        paymentsKafkaTemplate.send("payments", "payments5", payments);
+
+        paymentsKafkaTemplate.send("payments", "payments5", convertDto2Avro(payments));
+    }
+
+    private Payments convertDto2Avro(PaymentsRequestDTO dto) {
+        return Payments.newBuilder()
+                .setUser(dto.getUser())
+                .setAmount(dto.getAmount())
+                .setPaymentsId(dto.getPaymentsId())
+                .setCurrency(dto.getCurrency())
+                .setIsCredit(dto.isCredit())
+                .setPaymentsStamp(Instant.now().toEpochMilli())
+                .build();
     }
 }

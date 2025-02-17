@@ -29,7 +29,7 @@ import java.util.Optional;
 public class AccountService {
     private final AccountRepository accountRepository;
     private final MemberRepository memberRepository;
-    private final KafkaTemplate<String, PutMoneyRequest> jsonKafkaTemplate;
+    private final KafkaTemplate<String, PutMoneyRequest> putMoneyRequestKafkaTemplate;
     private final RedisTemplate<String, String> redisTemplate;
 
     public MakeAccountDto.MakeAccountResponse makeAccount(MakeAccountDto.MakeAccountRequest request) {
@@ -68,7 +68,7 @@ public class AccountService {
     }
 
     public void putMoneyAndProduceMessage(PutMoneyRequest request) {
-        jsonKafkaTemplate.send("PutMoney", request).toCompletableFuture()
+        putMoneyRequestKafkaTemplate.send("PutMoney", request).toCompletableFuture()
                 .whenComplete((sendResult, throwable) -> {
                     log.info("파티션 = {}, 오프셋 = {}\n", sendResult.getRecordMetadata().partition(),
                             sendResult.getRecordMetadata().offset());
