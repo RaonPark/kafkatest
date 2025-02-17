@@ -6,11 +6,13 @@ import com.example.ProblemSolving;
 import com.example.kafkatest.configuration.properties.KafkaProperties;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -20,6 +22,7 @@ import java.util.Map;
 
 @Configuration
 public class AvroKafkaProducersConfig {
+    @Primary
     @Bean
     public <T extends SpecificRecord> ProducerFactory<String, T> genericAvroKafkaProducer(KafkaProperties.KafkaProducersProperties properties) {
         Map<String, Object> configMap = new HashMap<>();
@@ -31,7 +34,6 @@ public class AvroKafkaProducersConfig {
         configMap.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024));
         configMap.put(ProducerConfig.LINGER_MS_CONFIG, "20");
         configMap.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema-registry:8081");
-        // json의 경우는 snappy가 좋은 압축방법입니다.
         configMap.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
 
         return new DefaultKafkaProducerFactory<>(configMap);

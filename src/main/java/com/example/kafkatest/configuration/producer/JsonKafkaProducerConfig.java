@@ -1,6 +1,9 @@
 package com.example.kafkatest.configuration.producer;
 
 import com.example.kafkatest.configuration.properties.KafkaProperties;
+import com.example.kafkatest.dto.ChatMessageKafkaDTO;
+import com.example.kafkatest.dto.request.PutMoneyRequest;
+import com.example.kafkatest.entity.ChatMessage;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -45,7 +48,17 @@ public class JsonKafkaProducerConfig {
     }
 
     @Bean
-    public <T> KafkaTemplate<String, T> jsonKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
+    public KafkaTemplate<String, PutMoneyRequest> putMoneyRequestKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
+        return new KafkaTemplate<>(jsonProducerFactory(properties));
+    }
+
+    @Bean
+    public KafkaTemplate<String, ChatMessage> chatMessageKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
+        return new KafkaTemplate<>(jsonProducerFactory(properties));
+    }
+
+    @Bean
+    public KafkaTemplate<String, ChatMessageKafkaDTO> chatMessageKafkaDTOKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
         return new KafkaTemplate<>(jsonProducerFactory(properties));
     }
 
