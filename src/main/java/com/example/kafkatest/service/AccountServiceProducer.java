@@ -8,6 +8,4 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountServiceProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
-
-
 }

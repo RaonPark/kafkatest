@@ -1,5 +1,6 @@
 package com.example.kafkatest.configuration.producer;
 
+import com.example.kafkatest.configuration.properties.KafkaProperties;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
