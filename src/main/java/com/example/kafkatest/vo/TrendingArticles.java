@@ -1,4 +1,4 @@
-package com.example.kafkatest.configuration;
+package com.example.kafkatest.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
