@@ -1,11 +1,10 @@
 package com.example.kafkatest.controller;
 
-import com.example.kafkatest.configuration.TrendingArticles;
+import com.example.kafkatest.vo.TrendingArticles;
 import com.example.kafkatest.dto.request.CreateArticleRequest;
 import com.example.kafkatest.service.ArticlesService;
 import com.example.kafkatest.service.RedisService;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
