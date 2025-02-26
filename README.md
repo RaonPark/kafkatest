@@ -69,6 +69,10 @@ So, with this thought, I think that Kafka is well suited for dealing with user d
 - Kafka Streams Processor API를 실제 예시와 함께 사용해보자. (Let's using Processor API with pratical example)
   - https://blog.naver.com/sumin9278/223720073988
 
+### 6. Kafka Streams를 사용하여 DLQ 기능을 구현해보자. (Implementing Dead-Letter-Queue(aka. DLQ) service with Kafka Streams)
+- Processor API를 사용하여 Topology를 직접 빌드하여 DLQ 기능을 구현해보기
+  - https://blog.naver.com/sumin9278/223775111377
+
 ## Apache Avro를 사용하여 더 빠른 직렬화/역직렬화를 해보자. (Let's fast Serializing and Deserializing with Apache Avro)
 - https://blog.naver.com/sumin9278/223689945739
 - Apache Avro and JSON comparison
