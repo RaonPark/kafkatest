@@ -19,4 +19,9 @@ public class PaymentsController {
     public void payments(@RequestBody PaymentsRequestDTO payments) {
         paymentsService.sendPayment(payments);
     }
+
+    @PostMapping("/paymentsStreams")
+    public void paymentsStreams(@RequestBody PaymentsRequestDTO payments) {
+        paymentsService.sendPaymentsToStream(payments);
+    }
 }

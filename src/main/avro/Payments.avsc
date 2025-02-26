@@ -17,8 +17,10 @@
     },
     {
       "name": "paymentsStamp",
-      "type": "long",
-      "logicalType": "timestamp-millis"
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
     },
     {
       "name": "isCredit",

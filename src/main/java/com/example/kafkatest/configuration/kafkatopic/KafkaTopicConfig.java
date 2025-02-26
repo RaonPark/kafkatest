@@ -1,5 +1,6 @@
-package com.example.kafkatest.configuration;
+package com.example.kafkatest.configuration.kafkatopic;
 
+import com.example.kafkatest.configuration.properties.KafkaTopicNames;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.TopicConfig;
@@ -130,6 +131,39 @@ public class KafkaTopicConfig {
     public NewTopic paymentsTopic() {
         return TopicBuilder
                 .name("payments.topic")
+                .replicas(3)
+                .partitions(10)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "3")
+                .build();
+    }
+
+    @Bean
+    public NewTopic paymentsStreamsTopic() {
+        return TopicBuilder
+                .name(KafkaTopicNames.PAYMENTS_STREAMS_TOPIC)
+                .replicas(3)
+                .partitions(10)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "3")
+                .build();
+    }
+
+    @Bean
+    public NewTopic paymentsDlqTopic() {
+        return TopicBuilder
+                .name(KafkaTopicNames.PAYMENTS_STREAMS_DLQ_TOPIC)
+                .replicas(3)
+                .partitions(10)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "3")
+                .build();
+    }
+
+    @Bean
+    public NewTopic paymentsDlqCountsTopic() {
+        return TopicBuilder
+                .name(KafkaTopicNames.PAYMENTS_STREAMS_DLQ_COUNTS_TOPIC)
                 .replicas(3)
                 .partitions(10)
                 .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")

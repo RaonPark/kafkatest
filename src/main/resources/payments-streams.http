@@ -1,0 +1,25 @@
+###
+POST http://localhost:8080/paymentsStreams
+Content-type: application/json
+
+{
+  "user": 100,
+  "amount": 15.00,
+  "currency": "USD",
+  "paymentsStamp": "2025-02-17T17:40:30",
+  "isCredit": false,
+  "paymentsId": "0293-deds"
+}
+
+### for error dlt
+POST http://localhost:8080/paymentsStreams
+Content-type: application/json
+
+{
+  "user": 100,
+  "amount": 15.00,
+  "currency": "USD",
+  "paymentsStamp": "2025-02-17T17:40:30",
+  "isCredit": false,
+  "paymentsId": "error-payments"
+}
