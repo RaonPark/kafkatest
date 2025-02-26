@@ -6,6 +6,7 @@ import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,28 @@ public class KafkaPaymentsConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, Payments> containerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         containerFactory.setConsumerFactory(paymentsKafkaConsumer(consumersProperties));
+        return containerFactory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, Integer> paymentsDlqCountsKafkaConsumer(KafkaProperties.KafkaConsumersProperties consumerProperties) {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, consumerProperties.bootstrapServers);
+        configMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
+        configMap.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+        configMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, consumerProperties.enableAutoCommit);
+        configMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, consumerProperties.autoOffsetReset);
+        configMap.put(ConsumerConfig.GROUP_ID_CONFIG, "payments.dlq.counts");
+        configMap.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema-registry:8081");
+
+        return new DefaultKafkaConsumerFactory<>(configMap);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Integer> paymentsDlqCountsListenerContainer(KafkaProperties.KafkaConsumersProperties consumersProperties) {
+        ConcurrentKafkaListenerContainerFactory<String, Integer> containerFactory = new ConcurrentKafkaListenerContainerFactory<>();
+        containerFactory.setConsumerFactory(paymentsDlqCountsKafkaConsumer(consumersProperties));
         return containerFactory;
     }
 }
