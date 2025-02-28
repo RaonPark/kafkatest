@@ -85,21 +85,21 @@ services:
     networks:
       - dockertest
 
-  kafdrop:
-    image: obsidiandynamics/kafdrop:latest
-    container_name: kafdrop
-    platform: linux/amd64
-    ports:
-      - "9000:9000"
-    environment:
-      # 도커 내부에서는 9092 포트를 사용해야한다.
-      KAFKA_BROKER_CONNECT: "kafka1:9092,kafka2:9092,kafak3:9092"
-    depends_on:
-      - kafka1
-      - kafka2
-      - kafka3
-    networks:
-      - dockertest
+#  kafdrop:
+#    image: obsidiandynamics/kafdrop:latest
+#    container_name: kafdrop
+#    platform: linux/amd64
+#    ports:
+#      - "9000:9000"
+#    environment:
+#      # 도커 내부에서는 9092 포트를 사용해야한다.
+#      KAFKA_BROKER_CONNECT: "kafka1:9092,kafka2:9092,kafak3:9092"
+#    depends_on:
+#      - kafka1
+#      - kafka2
+#      - kafka3
+#    networks:
+#      - dockertest
 
   db:
     image: mysql:latest
@@ -136,6 +136,7 @@ services:
       - kafka1
       - kafka2
       - kafka3
+      - mongodb
     networks:
       - dockertest
 
@@ -166,6 +167,20 @@ services:
       - kafka1
       - kafka2
       - kafka3
+    networks:
+      - dockertest
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb/data:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
+      - MONGO_INITDB_DATABASE=kafkatest
     networks:
       - dockertest
 

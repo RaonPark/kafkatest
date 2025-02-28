@@ -58,6 +58,12 @@ spring:
   data:
     jdbc:
       dialect: mysql
+    mongodb:
+      uri: mongodb://root:1234@mongodb:27017/kafkatest?authSource=admin
+      host: root
+      password: 1234
+      database: kafkatest
+
 kafka:
   avro:
     consumer:

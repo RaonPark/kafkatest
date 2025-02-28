@@ -84,14 +84,6 @@ public class PaymentsService {
         }
     }
 
-//    @DltHandler
-//    public void handleDltPayments(Payments payments,
-//                                  @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-//        log.info("Event on dlt topic = {}, payload = {}", topic, payments);
-//
-//        paymentsKafkaTemplate.send(KafkaTopicNames.PAYMENTS_STREAMS_DLQ_TOPIC, "error-payment", payments);
-//    }
-
     @KafkaListener(topics = KafkaTopicNames.PAYMENTS_STREAMS_DLQ_COUNTS_TOPIC, containerFactory = "paymentsDlqCountsListenerContainer")
     public void handlePaymentsDlqCounts(ConsumerRecord<String, Integer> record) {
         log.info("dlq counts = {} in time = {}", record.value(), Instant.ofEpochMilli(record.timestamp()));
