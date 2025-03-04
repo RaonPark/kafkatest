@@ -1,8 +1,5 @@
-package com.example.kafkatest.controller;
+package com.example.kafkatest.examples.dlq;
 
-import com.example.Payments;
-import com.example.kafkatest.dto.request.PaymentsRequestDTO;
-import com.example.kafkatest.service.PaymentsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;

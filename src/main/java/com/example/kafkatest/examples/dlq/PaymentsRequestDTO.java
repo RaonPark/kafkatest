@@ -1,4 +1,4 @@
-package com.example.kafkatest.dto.request;
+package com.example.kafkatest.examples.dlq;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

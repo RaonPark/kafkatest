@@ -1,12 +1,11 @@
-package com.example.kafkatest.service;
+package com.example.kafkatest.examples.dlq;
 
 import com.example.Payments;
 import com.example.kafkatest.configuration.properties.KafkaTopicNames;
-import com.example.kafkatest.dto.request.PaymentsRequestDTO;
+import com.example.kafkatest.examples.dlq.PaymentsRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.core.KafkaTemplate;
