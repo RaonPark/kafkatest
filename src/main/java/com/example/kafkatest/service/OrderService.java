@@ -7,6 +7,8 @@ import com.example.kafkatest.dto.response.CancelAllOrderResponse;
 import com.example.kafkatest.dto.response.CancelPartialOrderResponse;
 import com.example.kafkatest.dto.response.OrderResponse;
 import com.example.kafkatest.entity.document.Orders;
+import com.example.kafkatest.entity.document.ReceiptSellerInfo;
+import com.example.kafkatest.entity.document.Sellers;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +35,21 @@ public class OrderService {
             throw new RuntimeException("MongoDB insertion 에러 발생!");
         }
 
+        Query findSellerQuery = new Query(Criteria.where("sellerId").is(order.getSellerId()));
+        Sellers seller = Optional.ofNullable(mongoTemplate.findOne(findSellerQuery, Sellers.class))
+                .orElseThrow(() -> new RuntimeException("해당 점포를 찾을 수 없습니다!"));
+
+        ReceiptSellerInfo sellerInfo = ReceiptSellerInfo.builder()
+                .address(seller.getAddress())
+                .businessName(seller.getBusinessName())
+                .telephone(seller.getTelephone())
+                .build();
+
         return OrderResponse.builder()
                 .orderNumber(insertedOrder.getOrderNumber())
+                .sellerInfo(sellerInfo)
+                .orderedTime(insertedOrder.getOrderedTime())
+                .products(insertedOrder.getProducts())
                 .build();
     }
 

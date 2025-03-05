@@ -30,6 +30,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 
@@ -46,7 +47,7 @@ class OrderServiceTest {
 
     static final String ORDER_NUMBER = "92838174";
     static final String SELLER_ID = "298371";
-    static final String BUSINESS_NAME = "Raon Shop";
+    static final String BUSINESS_NAME = "HELLO WORLD!";
     static final String ACCOUNT_NUMBER = "938-28381";
     static final String ADDRESS = "Seoul, Republic Of Korea";
     static final String TELEPHONE = "02-838-3273";
@@ -76,12 +77,26 @@ class OrderServiceTest {
         Orders savedOrders = new Orders(order.getOrderNumber(), order.getOrderedTime(),
                 order.getProducts(), SELLER_ID);
 
+        Sellers seller = Sellers.builder()
+                .sellerId(SELLER_ID)
+                .businessName(BUSINESS_NAME)
+                .accountNumber(ACCOUNT_NUMBER)
+                .telephone(TELEPHONE)
+                .address(ADDRESS)
+                .build();
+
         // WHEN
         when(mongoTemplate.save(any(Orders.class))).thenReturn(savedOrders);
+        when(mongoTemplate.findOne(any(Query.class), eq(Sellers.class))).thenReturn(seller);
         OrderResponse orderResponse = orderService.publishOrder(order);
 
         // THEN
-        assertEquals(orderResponse.getOrderNumber(), ORDER_NUMBER);
+        assertEquals(ORDER_NUMBER, orderResponse.orderNumber());
+        assertEquals(products.size(), orderResponse.products().size());
+        assertEquals(order.getOrderedTime(), orderResponse.orderedTime());
+        assertEquals(BUSINESS_NAME, orderResponse.sellerInfo().businessName());
+        assertEquals(ADDRESS, orderResponse.sellerInfo().address());
+        assertEquals(TELEPHONE, orderResponse.sellerInfo().telephone());
     }
 
     @Test
