@@ -78,7 +78,8 @@ public class OrderService {
         if(updateResult.getMatchedCount() != 1 || updateResult.getModifiedCount() != 1)
             throw new RuntimeException("부분 취소 에러!");
 
-        Orders orders = mongoTemplate.findOne(findQuery, Orders.class);
+        Orders orders = Optional.ofNullable(mongoTemplate.findOne(findQuery, Orders.class))
+                .orElseThrow(() -> new RuntimeException("Mongo DB 에러!"));
 
         return CancelPartialOrderResponse.builder()
                 .orderNumber(cancelOrder.getOrderNumber())
