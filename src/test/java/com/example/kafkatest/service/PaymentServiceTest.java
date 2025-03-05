@@ -6,12 +6,7 @@ import com.example.kafkatest.dto.response.CancelPaymentResponse;
 import com.example.kafkatest.dto.response.PaymentResponse;
 import com.example.kafkatest.entity.document.Payment;
 import com.example.kafkatest.support.PaymentType;
-import com.mongodb.client.result.InsertOneResult;
-import org.bson.BsonString;
-import org.bson.BsonValue;
-import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,7 +19,8 @@ import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = PaymentService.class)
 public class PaymentServiceTest {

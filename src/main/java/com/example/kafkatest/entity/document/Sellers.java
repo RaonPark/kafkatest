@@ -1,5 +1,6 @@
 package com.example.kafkatest.entity.document;
 
+import lombok.Builder;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -16,7 +17,8 @@ public class Sellers {
     private String address;
     private String telephone;
 
-    public Sellers(
+    @Builder
+    protected Sellers(
             final String sellerId,
             final String businessName,
             final String accountNumber,
