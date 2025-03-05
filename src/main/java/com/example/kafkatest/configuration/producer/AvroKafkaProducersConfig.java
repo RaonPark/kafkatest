@@ -4,6 +4,8 @@ import avro.articles.TrendingArticles;
 import com.example.Payments;
 import com.example.ProblemSolving;
 import com.example.kafkatest.configuration.properties.KafkaProperties;
+import com.raonpark.PaymentData;
+import com.raonpark.RevenueData;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
@@ -51,6 +53,16 @@ public class AvroKafkaProducersConfig {
 
     @Bean
     public KafkaTemplate<String, Payments> paymentsKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
+        return new KafkaTemplate<>(genericAvroKafkaProducer(properties));
+    }
+
+    @Bean
+    public KafkaTemplate<String, PaymentData> paymentDataKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
+        return new KafkaTemplate<>(genericAvroKafkaProducer(properties));
+    }
+
+    @Bean
+    public KafkaTemplate<String, RevenueData> revenueDataKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
         return new KafkaTemplate<>(genericAvroKafkaProducer(properties));
     }
 }

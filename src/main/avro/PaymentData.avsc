@@ -1,7 +1,7 @@
 {
   "namespace": "com.raonpark",
   "type": "record",
-  "name": "Payment",
+  "name": "PaymentData",
   "fields": [
     {
       "name": "amount",

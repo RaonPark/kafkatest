@@ -1,7 +1,7 @@
 {
   "namespace": "com.raonpark",
   "type": "record",
-  "name": "Revenue",
+  "name": "RevenueData",
   "fields": [
     {
       "name": "sellerId",
