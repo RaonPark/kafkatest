@@ -2,6 +2,7 @@ package com.example.kafkatest.configuration.kafkatopic;
 
 import com.example.Payments;
 import com.example.kafkatest.configuration.properties.KafkaTopicNames;
+import com.raonpark.PaymentData;
 import com.raonpark.RevenueData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,17 @@ public class KafkaRetryableTopicConfig {
                 // 온 모든 요청이 같은 순간에 retry 를 진행할 것이고 이는 서버 내부의 부하를 늘리게 된다.
                 // 따라서 랜덤성을 주어서(jitter, 지연변이) 동시에 온 요청들이 서로 다른 backoff 를 가지게 하는 것이다.
                 .exponentialBackoff(2000, 2, 20000, true)
+                .create(kafkaTemplate);
+    }
+
+    @Bean
+    public RetryTopicConfiguration paymentTopicConfig(KafkaTemplate<String, PaymentData> kafkaTemplate) {
+        return RetryTopicConfigurationBuilder.newInstance()
+                .dltSuffix("-dlt")
+                .dltProcessingFailureStrategy(DltStrategy.ALWAYS_RETRY_ON_ERROR)
+                .maxAttempts(10)
+                .concurrency(3)
+                .exponentialBackoff(500, 2, 20000, true)
                 .create(kafkaTemplate);
     }
 }
