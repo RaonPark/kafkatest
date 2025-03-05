@@ -1,0 +1,27 @@
+{
+  "namespace": "com.raonpark",
+  "type": "record",
+  "name": "PaymentData",
+  "fields": [
+    {
+      "name": "amount",
+      "type": "long"
+    },
+    {
+      "name": "paymentType",
+      "type": "string"
+    },
+    {
+      "name": "cardCompany",
+      "type": "string"
+    },
+    {
+      "name": "cardNumber",
+      "type": "string"
+    },
+    {
+      "name": "cardCvc",
+      "type": "string"
+    }
+  ]
+}
