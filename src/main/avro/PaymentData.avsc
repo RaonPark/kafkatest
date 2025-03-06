@@ -4,6 +4,10 @@
   "name": "PaymentData",
   "fields": [
     {
+      "name": "orderNumber",
+      "type": "string"
+    },
+    {
       "name": "amount",
       "type": "long"
     },

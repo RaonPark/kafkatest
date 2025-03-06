@@ -4,6 +4,10 @@
   "name": "RevenueData",
   "fields": [
     {
+      "name": "orderNumber",
+      "type": "string"
+    },
+    {
       "name": "sellerId",
       "type": "string"
     },

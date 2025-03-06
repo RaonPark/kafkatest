@@ -2,10 +2,9 @@ package com.example.kafkatest.service;
 
 import avro.articles.TrendingArticles;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.apache.avro.specific.SpecificRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,11 +12,14 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Long> numericRedisTemplate;
     private final ObjectMapper objectMapper;
 
     public void save(String key, Object value) {
@@ -27,6 +29,10 @@ public class RedisService {
         } catch (JsonProcessingException ex) {
             throw new RuntimeException("ObjectMapper 에러!");
         }
+    }
+
+    public long findAsLong(String key) {
+        return Optional.ofNullable(numericRedisTemplate.opsForValue().get(key)).orElse(0L);
     }
 
     // 이 함수는 이제 제네릭으로 쓰일 것을 암시한다.
@@ -115,9 +121,17 @@ public class RedisService {
     }
 
     public void incrOne(String key) {
-        if(redisTemplate.opsForValue().get(key) != null)
-            redisTemplate.opsForValue().increment(key);
+        if(numericRedisTemplate.opsForValue().get(key) != null)
+            numericRedisTemplate.opsForValue().increment(key);
         else
-            redisTemplate.opsForValue().set(key, String.valueOf(1));
+            numericRedisTemplate.opsForValue().set(key, 1L);
+    }
+
+    public void incrDelta(String key, long delta) {
+        log.info("redis template for numeric = {}, {}", key, delta);
+        if(numericRedisTemplate.opsForValue().get(key) != null)
+            numericRedisTemplate.opsForValue().increment(key, delta);
+        else
+            numericRedisTemplate.opsForValue().set(key, delta);
     }
 }

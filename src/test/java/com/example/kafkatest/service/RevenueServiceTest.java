@@ -6,6 +6,7 @@ import com.example.kafkatest.entity.document.TotalRevenue;
 import com.mongodb.client.result.UpdateResult;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -22,7 +23,7 @@ public class RevenueServiceTest {
     @MockBean
     MongoTemplate mongoTemplate;
 
-    @InjectMocks
+    @Autowired
     RevenueService revenueService;
 
     static final String SELLER_ID = "123456789";
@@ -46,9 +47,10 @@ public class RevenueServiceTest {
         // WHEN
         when(mongoTemplate.upsert(findQuery, updateQuery, TotalRevenue.class))
                 .thenReturn(UpdateResult.acknowledged(1L, 1L, null));
+        when(mongoTemplate.findOne(any(Query.class), eq(TotalRevenue.class))).thenReturn(savedTotalRevenue);
         TotalRevenueResponse response = revenueService.modifyTotalRevenue(totalRevenue);
 
         // THEN
-        assertEquals(REVENUE, response.totalRevenue());
+        assertEquals(REVENUE * 100, response.totalRevenue());
     }
 }

@@ -57,8 +57,23 @@ public class AvroKafkaProducersConfig {
     }
 
     @Bean
+    public ProducerFactory<String, PaymentData> paymentDataProducerFactory(KafkaProperties.KafkaProducersProperties properties) {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.bootstrapServers);
+        configMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        configMap.put(ProducerConfig.ACKS_CONFIG, "all");
+        configMap.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(64*1024));
+        configMap.put(ProducerConfig.LINGER_MS_CONFIG, "20");
+        configMap.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://schema-registry:8081");
+        configMap.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+
+        return new DefaultKafkaProducerFactory<>(configMap);
+    }
+
+    @Bean
     public KafkaTemplate<String, PaymentData> paymentDataKafkaTemplate(KafkaProperties.KafkaProducersProperties properties) {
-        return new KafkaTemplate<>(genericAvroKafkaProducer(properties));
+        return new KafkaTemplate<>(paymentDataProducerFactory(properties));
     }
 
     @Bean

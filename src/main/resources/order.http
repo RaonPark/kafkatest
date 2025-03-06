@@ -1,0 +1,48 @@
+POST http://localhost:8080/registerSeller
+Content-Type: application/json
+
+{
+  "businessName": "HELLO WORLD!",
+  "address": "서울특별시 서초구",
+  "accountNumber": "1023-1834-4392-2913",
+  "telephone": "010-2302-9201"
+}
+
+> {%
+client.global.set("sellerId", response.body.sellerId);
+client.log("sellerId : " + client.global.get("sellerId"));
+ %}
+
+###
+< {%
+request.variables.set("sellerId", client.global.get("sellerId"));
+ %}
+POST http://localhost:8080/publishOrder
+Content-Type: application/json
+
+{
+  "orderRequest": {
+    "orderNumber": "123",
+    "orderedTime": "",
+    "products": [
+      {
+        "productName": "펩시콜라 제로 500ml",
+        "price": 2100,
+        "quantity": 10
+      },
+      {
+        "productName": "코카콜라 제로 500ml",
+        "price": 2300,
+        "quantity": 10
+      }
+    ],
+    "sellerId": "1956b9f65a5000000000000000048454c4c4f20574f524c4421"
+  },
+  "paymentRequest": {
+    "amount": 0,
+    "paymentType": "CASH",
+    "cardCompany": "신한",
+    "cardNumber": "0293-1283-9193-1234",
+    "cardCvc": "302"
+  }
+}

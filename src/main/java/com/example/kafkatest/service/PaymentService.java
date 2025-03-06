@@ -6,22 +6,52 @@ import com.example.kafkatest.dto.response.CancelPaymentResponse;
 import com.example.kafkatest.dto.response.PaymentResponse;
 import com.example.kafkatest.entity.document.Payment;
 import com.example.kafkatest.support.PaymentType;
+import com.raonpark.PaymentData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentService {
     private final MongoTemplate mongoTemplate;
+    private final KafkaTemplate<String, PaymentData> paymentDataKafkaTemplate;
+    private final RedisService redisService;
+
+    @KafkaListener(topics = {"paymentData"}, groupId = "PAYMENT", containerFactory = "paymentDataConcurrentKafkaListenerContainerFactory")
+    public void consumePayment(ConsumerRecord<String, PaymentData> record) {
+        PaymentData paymentData = record.value();
+        PaymentRequest paymentRequest = PaymentRequest.builder()
+                .paymentType(PaymentType.findType(paymentData.getPaymentType().toString()))
+                .amount(paymentData.getAmount())
+                .cardCompany(paymentData.getCardCompany().toString())
+                .cardCvc(paymentData.getCardCvc().toString())
+                .cardNumber(paymentData.getCardNumber().toString())
+                .build();
+
+        CompletableFuture<PaymentResponse> paymentFuture = CompletableFuture.supplyAsync(() -> pay(paymentRequest))
+                        .thenApply(paymentResponse -> {
+                            redisService.incrDelta(paymentData.getOrderNumber().toString(), 10);
+                            return paymentResponse;
+                        });
+
+        PaymentResponse response = paymentFuture.join();
+
+        log.info("payment = ${} has arrived and accomplished.", response);
+    }
 
     public PaymentResponse pay(PaymentRequest payment) {
         PaymentResponse response = null;
