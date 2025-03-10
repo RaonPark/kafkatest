@@ -1,10 +1,10 @@
 package com.example.kafkatest.service;
 
-import com.example.kafkatest.dto.request.SellerRegisterRequest;
-import com.example.kafkatest.dto.response.SellerRegisterResponse;
-import com.example.kafkatest.entity.document.Sellers;
+import com.example.kafkatest.dto.request.payments.SellerRegisterRequest;
+import com.example.kafkatest.dto.response.payments.SellerRegisterResponse;
+import com.example.kafkatest.entity.payments.document.Sellers;
+import com.example.kafkatest.service.payments_service.SellerService;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

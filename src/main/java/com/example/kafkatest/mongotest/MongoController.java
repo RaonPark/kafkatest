@@ -1,7 +1,7 @@
 package com.example.kafkatest.mongotest;
 
-import com.example.kafkatest.entity.document.Orders;
-import com.example.kafkatest.entity.document.Products;
+import com.example.kafkatest.entity.payments.document.Orders;
+import com.example.kafkatest.entity.payments.document.Products;
 import com.example.kafkatest.repository.test.OrdersTestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor

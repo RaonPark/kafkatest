@@ -1,11 +1,11 @@
 package com.example.kafkatest.service;
 
-import com.example.kafkatest.dto.request.TotalRevenueRequest;
-import com.example.kafkatest.dto.response.TotalRevenueResponse;
-import com.example.kafkatest.entity.document.TotalRevenue;
+import com.example.kafkatest.dto.request.payments.TotalRevenueRequest;
+import com.example.kafkatest.dto.response.payments.TotalRevenueResponse;
+import com.example.kafkatest.entity.payments.document.TotalRevenue;
+import com.example.kafkatest.service.payments_service.RevenueService;
 import com.mongodb.client.result.UpdateResult;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
