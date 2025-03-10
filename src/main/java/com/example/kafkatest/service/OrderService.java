@@ -1,30 +1,39 @@
 package com.example.kafkatest.service;
 
-import com.example.kafkatest.dto.request.*;
+import com.example.kafkatest.dto.request.CancelAllOrderRequest;
+import com.example.kafkatest.dto.request.CancelPartialOrderRequest;
+import com.example.kafkatest.dto.request.OrderRequest;
+import com.example.kafkatest.dto.request.PaymentRequest;
 import com.example.kafkatest.dto.response.CancelAllOrderResponse;
 import com.example.kafkatest.dto.response.CancelPartialOrderResponse;
 import com.example.kafkatest.dto.response.OrderResponse;
+import com.example.kafkatest.entity.document.OrderPaymentOutbox;
 import com.example.kafkatest.entity.document.Orders;
-import com.example.kafkatest.entity.document.Products;
 import com.example.kafkatest.entity.document.ReceiptSellerInfo;
 import com.example.kafkatest.entity.document.Sellers;
+import com.example.kafkatest.support.ProcessedType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import com.raonpark.OrderPaymentOutboxAvro;
 import com.raonpark.PaymentData;
 import com.raonpark.RevenueData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +43,12 @@ public class OrderService {
     private final KafkaTemplate<String, PaymentData> paymentDataKafkaTemplate;
     private final KafkaTemplate<String, RevenueData> revenueDataKafkaTemplate;
     private final RedisService redisService;
+    private final ObjectMapper objectMapper;
 
     public OrderResponse publishOrder(OrderRequest order) {
         String orderNumber = generateOrderNumber(order);
         String orderedTime = Instant.now().atZone(ZoneId.of("Asia/Seoul")).toString();
-        Orders orders = new Orders(orderNumber, orderedTime, order.getProducts(), order.getSellerId());
+        Orders orders = new Orders(orderNumber, orderedTime, order.products(), order.sellerId());
         Orders insertedOrder = mongoTemplate.save(orders);
 
         // 만약 insertedOrder 에서 id가 null 이라면 문제가 생긴 것이다.
@@ -46,7 +56,7 @@ public class OrderService {
             throw new RuntimeException("MongoDB insertion 에러 발생!");
         }
 
-        Query findSellerQuery = new Query(Criteria.where("sellerId").is(order.getSellerId()));
+        Query findSellerQuery = new Query(Criteria.where("sellerId").is(order.sellerId()));
         Sellers seller = Optional.ofNullable(mongoTemplate.findOne(findSellerQuery, Sellers.class))
                 .orElseThrow(() -> new RuntimeException("해당 점포를 찾을 수 없습니다!"));
 
@@ -66,6 +76,91 @@ public class OrderService {
                 .orderedTime(insertedOrder.getOrderedTime())
                 .products(insertedOrder.getProducts())
                 .build();
+    }
+
+    public OrderResponse publishOrderWithOutbox(OrderRequest order, PaymentRequest payment, long aggId) {
+        String orderNumber = generateOrderNumber(order);
+        String orderedTime = Instant.now().atZone(ZoneId.of("Asia/Seoul")).toString();
+        Orders orders = new Orders(orderNumber, orderedTime, order.products(), order.sellerId());
+
+        /**
+         * 먼저 orders document 를 저장하고
+         * 그 다음에 outbox 에 저장한다.
+         * CompletableFuture 를 사용하여 동기를 보장한다.
+         */
+        CompletableFuture<Orders> savedOrderFuture = CompletableFuture.supplyAsync(() -> mongoTemplate.save(orders))
+                .thenApply(savedOrder -> {
+                    String payload = paymentDataToString(payment);
+
+                    OrderPaymentOutbox orderPaymentOutbox = OrderPaymentOutbox.builder()
+                            .aggId(String.valueOf(aggId))
+                            .payload(payload)
+                            .processedType(ProcessedType.ORDER)
+                            .build();
+                    mongoTemplate.save(orderPaymentOutbox);
+
+                    return savedOrder;
+                });
+
+        Query findSellerQuery = new Query(Criteria.where("sellerId").is(order.sellerId()));
+        Sellers seller = Optional.ofNullable(mongoTemplate.findOne(findSellerQuery, Sellers.class))
+                .orElseThrow(() -> new RuntimeException("해당 점포를 찾을 수 없습니다!"));
+
+        ReceiptSellerInfo sellerInfo = ReceiptSellerInfo.builder()
+            .address(seller.getAddress())
+            .businessName(seller.getBusinessName())
+            .telephone(seller.getTelephone())
+            .build();
+
+        Orders insertedOrder = savedOrderFuture.join();
+
+        log.info("in orderService = {}", orderNumber);
+
+        return OrderResponse.builder()
+                .orderNumber(insertedOrder.getOrderNumber())
+                .sellerInfo(sellerInfo)
+                .orderedTime(insertedOrder.getOrderedTime())
+                .products(insertedOrder.getProducts())
+                .build();
+    }
+
+    public boolean waitUntilPaymentFinished(long aggId, int retries) {
+        if(retries == -1)
+            return false;
+        log.info("Process Stage를 기다리는 중 : id = {} retries = {}", aggId, retries);
+        ProcessedType processStage = Optional.ofNullable(
+                redisService.findHash("order", String.valueOf(aggId), ProcessedType.class))
+                .orElse(ProcessedType.NOT_PROCESSED);
+
+        if(processStage.equals(ProcessedType.PAYMENT) || processStage.equals(ProcessedType.TOTAL_REVENUE)) {
+            return true;
+        }
+
+        try {
+            Thread.sleep(1000L);
+        } catch(InterruptedException e) {
+            throw new RuntimeException("Thread Error");
+        }
+
+        return waitUntilPaymentFinished(aggId, retries - 1);
+    }
+
+    @KafkaListener(topics = {"order-payment-outbox.topic"}, containerFactory = "orderPaymentOutboxConcurrentKafkaListenerContainerFactory")
+    public void consumeOrder(ConsumerRecord<String, OrderPaymentOutboxAvro> record) {
+        OrderPaymentOutboxAvro outbox = record.value();
+        ProcessedType processStage = ProcessedType.toStage(outbox.getProcessStage().toString());
+        if(processStage.equals(ProcessedType.PAYMENT) || processStage.equals(ProcessedType.TOTAL_REVENUE)) {
+            log.info("process 가 완료되어 레디스에 완료를 함 = {}", outbox);
+            redisService.saveHash("order", outbox.getAggId().toString(), processStage);
+        }
+    }
+
+    private String paymentDataToString(PaymentRequest payment) {
+        try {
+            return objectMapper.writeValueAsString(payment);
+        } catch(JsonProcessingException e) {
+            throw new RuntimeException("Json Processing ERROR!");
+        }
     }
 
     public void sendPaymentData(String orderNumber, OrderRequest order, PaymentRequest payment) {
@@ -90,7 +185,7 @@ public class OrderService {
         RevenueData revenueData = RevenueData.newBuilder()
                 .setOrderNumber(orderNumber)
                 .setRevenue(revenue)
-                .setSellerId(order.getSellerId())
+                .setSellerId(order.sellerId())
                 .build();
 
         log.info("send revenueData from orderService = {}", revenueData);
@@ -99,7 +194,7 @@ public class OrderService {
     }
 
     private long computeAmount(OrderRequest order) {
-        return order.getProducts().stream().map(products -> products.price() * products.quantity())
+        return order.products().stream().map(products -> products.price() * products.quantity())
                 .reduce(Long::sum)
                 .orElse(0L);
     }
@@ -143,8 +238,8 @@ public class OrderService {
 
     private String generateOrderNumber(OrderRequest order) {
         String time = Long.toHexString(Instant.now().toEpochMilli());
-        String orderProductsSize = Long.toHexString(order.getProducts().size());
+        String orderProductsSize = Long.toHexString(order.products().size());
 
-        return time + order.getSellerId().substring(0, 4) + orderProductsSize;
+        return time + order.sellerId().substring(0, 4) + orderProductsSize;
     }
 }

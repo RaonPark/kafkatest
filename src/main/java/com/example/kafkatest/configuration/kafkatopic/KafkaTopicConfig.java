@@ -192,4 +192,15 @@ public class KafkaTopicConfig {
                 .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "3")
                 .build();
     }
+
+    @Bean
+    public NewTopic orderPaymentOutboxTopic() {
+        return TopicBuilder
+                .name("order-payment-outbox.topic")
+                .replicas(3)
+                .partitions(10)
+                .config(TopicConfig.COMPRESSION_TYPE_CONFIG, "producer")
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "3")
+                .build();
+    }
 }

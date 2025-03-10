@@ -6,12 +6,9 @@ import lombok.*;
 import java.util.List;
 
 @Builder
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class OrderRequest {
-    private String orderNumber;
-    private String orderedTime;
-    private List<Products> products;
-    private String sellerId;
+public record OrderRequest(
+        List<Products> products,
+        String sellerId
+) {
+
 }

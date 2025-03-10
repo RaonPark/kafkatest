@@ -4,8 +4,13 @@ import com.example.kafkatest.dto.request.CancelPaymentRequest;
 import com.example.kafkatest.dto.request.PaymentRequest;
 import com.example.kafkatest.dto.response.CancelPaymentResponse;
 import com.example.kafkatest.dto.response.PaymentResponse;
+import com.example.kafkatest.entity.document.OrderPaymentOutbox;
 import com.example.kafkatest.entity.document.Payment;
 import com.example.kafkatest.support.PaymentType;
+import com.example.kafkatest.support.ProcessedType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.raonpark.OrderPaymentOutboxAvro;
 import com.raonpark.PaymentData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +18,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -29,7 +34,48 @@ import java.util.concurrent.CompletableFuture;
 public class PaymentService {
     private final MongoTemplate mongoTemplate;
     private final KafkaTemplate<String, PaymentData> paymentDataKafkaTemplate;
+    private final ObjectMapper objectMapper;
     private final RedisService redisService;
+
+    @KafkaListener(topics = {"order-payment-outbox.topic"}, containerFactory = "orderPaymentOutboxConcurrentKafkaListenerContainerFactory")
+    public void consumeOutbox(ConsumerRecord<String, OrderPaymentOutboxAvro> record) {
+        OrderPaymentOutboxAvro outbox = record.value();
+        ProcessedType processStage = ProcessedType.toStage(outbox.getProcessStage().toString());
+
+        log.info("outbox topic in payment = {}", outbox);
+
+        if(!processStage.equals(ProcessedType.ORDER))
+            return ;
+
+        CompletableFuture.supplyAsync(() -> pay(stringToPaymentData(outbox.getPayload().toString())))
+                .thenApply(paymentResponse -> {
+                    Query findQuery = new Query(Criteria.where("aggId").is(outbox.getAggId().toString()));
+                    Update updateQuery = new Update().set("payload", paymentResponseToString(paymentResponse))
+                                    .set("processedType", ProcessedType.PAYMENT);
+                    mongoTemplate.updateFirst(findQuery, updateQuery, OrderPaymentOutbox.class);
+
+                    redisService.saveHash("order", outbox.getAggId().toString(), ProcessedType.PAYMENT);
+
+                    return paymentResponse;
+                })
+                .join();
+    }
+
+    private PaymentRequest stringToPaymentData(String payload) {
+        try {
+            return objectMapper.readValue(payload, PaymentRequest.class);
+        } catch(JsonProcessingException e) {
+            throw new RuntimeException("Json Processing ERROR!");
+        }
+    }
+
+    private String paymentResponseToString(PaymentResponse paymentResponse) {
+        try {
+            return objectMapper.writeValueAsString(paymentResponse);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Json Processing ERROR!");
+        }
+    }
 
     @KafkaListener(topics = {"paymentData"}, groupId = "PAYMENT", containerFactory = "paymentDataConcurrentKafkaListenerContainerFactory")
     public void consumePayment(ConsumerRecord<String, PaymentData> record) {

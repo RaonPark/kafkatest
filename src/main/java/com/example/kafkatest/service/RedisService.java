@@ -120,11 +120,13 @@ public class RedisService {
         return trendingArticles;
     }
 
-    public void incrOne(String key) {
+    public long incrOne(String key) {
         if(numericRedisTemplate.opsForValue().get(key) != null)
-            numericRedisTemplate.opsForValue().increment(key);
-        else
+            return numericRedisTemplate.opsForValue().increment(key);
+        else {
             numericRedisTemplate.opsForValue().set(key, 1L);
+            return 1L;
+        }
     }
 
     public void incrDelta(String key, long delta) {

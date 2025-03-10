@@ -51,6 +51,7 @@ class OrderServiceTest {
     static final String ACCOUNT_NUMBER = "938-28381";
     static final String ADDRESS = "Seoul, Republic Of Korea";
     static final String TELEPHONE = "02-838-3273";
+    static final String ORDERED_TIME = Instant.now().atZone(ZoneId.of("Asia/Seoul")).toString();
 
     @BeforeEach
     void init() {
@@ -70,12 +71,10 @@ class OrderServiceTest {
     void 주문하기() {
         // GIVEN
         OrderRequest order = OrderRequest.builder()
-                .orderedTime(Instant.now().atZone(ZoneId.of("Asia/Seoul")).toString())
                 .products(products)
-                .orderNumber(ORDER_NUMBER)
                 .build();
-        Orders savedOrders = new Orders(order.getOrderNumber(), order.getOrderedTime(),
-                order.getProducts(), SELLER_ID);
+        Orders savedOrders = new Orders(ORDER_NUMBER, ORDERED_TIME,
+                order.products(), SELLER_ID);
 
         Sellers seller = Sellers.builder()
                 .sellerId(SELLER_ID)
@@ -93,7 +92,7 @@ class OrderServiceTest {
         // THEN
         assertEquals(ORDER_NUMBER, orderResponse.orderNumber());
         assertEquals(products.size(), orderResponse.products().size());
-        assertEquals(order.getOrderedTime(), orderResponse.orderedTime());
+        assertEquals(ORDERED_TIME, orderResponse.orderedTime());
         assertEquals(BUSINESS_NAME, orderResponse.sellerInfo().businessName());
         assertEquals(ADDRESS, orderResponse.sellerInfo().address());
         assertEquals(TELEPHONE, orderResponse.sellerInfo().telephone());

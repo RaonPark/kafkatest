@@ -1,0 +1,19 @@
+{
+  "name": "OrderPaymentOutboxAvro",
+  "type": "record",
+  "namespace": "com.raonpark",
+  "fields": [
+    {
+      "name": "aggId",
+      "type": "string"
+    },
+    {
+      "name": "payload",
+      "type": "string"
+    },
+    {
+      "name": "processStage",
+      "type": "string"
+    }
+  ]
+}

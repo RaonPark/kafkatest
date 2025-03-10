@@ -3,6 +3,7 @@ package com.example.kafkatest.controller;
 import com.example.kafkatest.dto.request.PublishOrderRequest;
 import com.example.kafkatest.dto.response.OrderResponse;
 import com.example.kafkatest.service.OrderService;
+import com.example.kafkatest.service.OutboxService;
 import com.example.kafkatest.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 public class OrderController {
     private final OrderService orderService;
     private final RedisService redisService;
+    private final OutboxService outboxService;
 
     @PostMapping("/publishOrder")
     public ResponseEntity<OrderResponse> publishOrder(@RequestBody PublishOrderRequest request) {
@@ -32,8 +34,7 @@ public class OrderController {
         // 하지만 지금 생각하는 것은 오프라인 샵이므로 결제 정보를 먼저 저장하는 것이 중요하다고 생각한다.
 
         // 일단 우선은 order 를 먼저 하여 구현을 해보자.
-        CompletableFuture<OrderResponse> orderFuture = CompletableFuture.supplyAsync(() ->
-                orderService.publishOrder(request.orderRequest()))
+        CompletableFuture<OrderResponse> orderFuture = CompletableFuture.supplyAsync(() -> orderService.publishOrder(request.orderRequest()))
                 .thenApply(orderResponse -> {
                     orderService.sendPaymentData(orderResponse.orderNumber(), request.orderRequest(), request.paymentRequest());
                     orderService.sendRevenueData(orderResponse.orderNumber(), request.orderRequest());
@@ -59,6 +60,28 @@ public class OrderController {
 
         OrderResponse response = orderFuture.join();
 
+        if(response.orderNumber().equals("FAILED"))
+            return ResponseEntity.internalServerError().body(response);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/publishOrderWithOutbox")
+    public ResponseEntity<OrderResponse> publishOrderWithOutbox(@RequestBody PublishOrderRequest request) {
+        long aggId = redisService.incrOne("aggId");
+        CompletableFuture<OrderResponse> createOrder = CompletableFuture.supplyAsync(() -> orderService.publishOrderWithOutbox(request.orderRequest(), request.paymentRequest(), aggId))
+                .thenCompose(orderResponse -> CompletableFuture.supplyAsync(() -> {
+                    log.info("Outbox 가 찰 때까지 기다리는 중 = {}", orderResponse);
+                    boolean isFinished = orderService.waitUntilPaymentFinished(aggId, 5);
+                    if(isFinished)
+                        return orderResponse;
+                    else
+                        return OrderResponse.builder()
+                                .orderNumber("FAILED")
+                                .build();
+                }));
+
+        OrderResponse response = createOrder.join();
         if(response.orderNumber().equals("FAILED"))
             return ResponseEntity.internalServerError().body(response);
 

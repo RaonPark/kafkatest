@@ -17,7 +17,7 @@ client.log("sellerId : " + client.global.get("sellerId"));
 < {%
 request.variables.set("sellerId", client.global.get("sellerId"));
  %}
-POST http://localhost:8080/publishOrder
+POST http://localhost:8080/publishOrderWithOutbox
 Content-Type: application/json
 
 {
@@ -26,20 +26,15 @@ Content-Type: application/json
     "orderedTime": "",
     "products": [
       {
-        "productName": "펩시콜라 제로 500ml",
-        "price": 2100,
-        "quantity": 10
-      },
-      {
-        "productName": "코카콜라 제로 500ml",
-        "price": 2300,
-        "quantity": 10
+        "productName": "Spring In Action",
+        "price": 55000,
+        "quantity": 9
       }
     ],
-    "sellerId": "1956b9f65a5000000000000000048454c4c4f20574f524c4421"
+    "sellerId": "19574b0191d000000000000000048454c4c4f20574f524c4421"
   },
   "paymentRequest": {
-    "amount": 0,
+    "amount": 3410000,
     "paymentType": "CASH",
     "cardCompany": "신한",
     "cardNumber": "0293-1283-9193-1234",
