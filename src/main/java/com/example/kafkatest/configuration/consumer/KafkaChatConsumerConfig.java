@@ -1,8 +1,8 @@
 package com.example.kafkatest.configuration.consumer;
 
 import com.example.kafkatest.configuration.properties.KafkaProperties;
-import com.example.kafkatest.dto.ChatMessageKafkaDTO;
-import com.example.kafkatest.entity.ChatMessage;
+import com.example.kafkatest.dto.request.chat.ChatMessageKafkaDTO;
+import com.example.kafkatest.entity.chat.ChatMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;

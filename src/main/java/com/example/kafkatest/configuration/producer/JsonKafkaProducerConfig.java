@@ -1,9 +1,9 @@
 package com.example.kafkatest.configuration.producer;
 
 import com.example.kafkatest.configuration.properties.KafkaProperties;
-import com.example.kafkatest.dto.ChatMessageKafkaDTO;
-import com.example.kafkatest.dto.request.PutMoneyRequest;
-import com.example.kafkatest.entity.ChatMessage;
+import com.example.kafkatest.dto.request.chat.ChatMessageKafkaDTO;
+import com.example.kafkatest.dto.request.account.PutMoneyRequest;
+import com.example.kafkatest.entity.chat.ChatMessage;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;

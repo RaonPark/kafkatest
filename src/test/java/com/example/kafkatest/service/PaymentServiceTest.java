@@ -1,10 +1,11 @@
 package com.example.kafkatest.service;
 
-import com.example.kafkatest.dto.request.CancelPaymentRequest;
-import com.example.kafkatest.dto.request.PaymentRequest;
-import com.example.kafkatest.dto.response.CancelPaymentResponse;
-import com.example.kafkatest.dto.response.PaymentResponse;
-import com.example.kafkatest.entity.document.Payment;
+import com.example.kafkatest.dto.request.payments.CancelPaymentRequest;
+import com.example.kafkatest.dto.request.payments.PaymentRequest;
+import com.example.kafkatest.dto.response.payments.CancelPaymentResponse;
+import com.example.kafkatest.dto.response.payments.PaymentResponse;
+import com.example.kafkatest.entity.payments.document.Payment;
+import com.example.kafkatest.service.payments_service.PaymentService;
 import com.example.kafkatest.support.PaymentType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

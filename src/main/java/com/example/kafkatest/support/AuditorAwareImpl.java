@@ -1,6 +1,5 @@
 package com.example.kafkatest.support;
 
-import com.example.kafkatest.entity.Member;
 import com.example.kafkatest.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
