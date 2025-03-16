@@ -1,0 +1,15 @@
+{
+  "namespace": "com.raonpark.avro",
+  "name": "OrderOutboxMessage",
+  "type": "record",
+  "fields": [
+    {
+      "name": "aggId",
+      "type": "string"
+    },
+    {
+      "name": "payload",
+      "type": "string"
+    }
+  ]
+}

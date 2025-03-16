@@ -1,9 +1,8 @@
-package com.example.kafkatest.support;
+package com.example.kafkatest.support.enums;
 
 import java.util.Arrays;
-import java.util.Optional;
 
-public enum ProcessedType {
+public enum ProcessType {
     NOT_PROCESSED("처리전"),
     ORDER("주문처리"),
     PAYMENT("결제"),
@@ -12,7 +11,7 @@ public enum ProcessedType {
 
     private final String type;
 
-    ProcessedType(String type) {
+    ProcessType(String type) {
         this.type = type;
     }
 
@@ -20,9 +19,9 @@ public enum ProcessedType {
         return type;
     }
 
-    public static ProcessedType toStage(String type) {
-        return Arrays.stream(ProcessedType.values())
+    public static ProcessType toStage(String type) {
+        return Arrays.stream(ProcessType.values())
                 .filter(processedType -> processedType.getStage().equals(type))
-                .findAny().orElse(ProcessedType.NOOP);
+                .findAny().orElse(ProcessType.NOOP);
     }
 }

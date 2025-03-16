@@ -1,6 +1,6 @@
 package com.example.kafkatest.dto.request.chat;
 
-import com.example.kafkatest.support.ChatMessageType;
+import com.example.kafkatest.support.enums.ChatMessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -7,8 +7,8 @@ import com.example.kafkatest.dto.response.payments.PaymentResponse;
 import com.example.kafkatest.entity.payments.document.OrderPaymentOutbox;
 import com.example.kafkatest.entity.payments.document.Payment;
 import com.example.kafkatest.service.RedisService;
-import com.example.kafkatest.support.PaymentType;
-import com.example.kafkatest.support.ProcessedType;
+import com.example.kafkatest.support.enums.PaymentType;
+import com.example.kafkatest.support.enums.ProcessType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raonpark.OrderPaymentOutboxAvro;
@@ -41,21 +41,21 @@ public class PaymentService {
     @KafkaListener(topics = {"order-payment-outbox.topic"}, containerFactory = "orderPaymentOutboxConcurrentKafkaListenerContainerFactory")
     public void consumeOutbox(ConsumerRecord<String, OrderPaymentOutboxAvro> record) {
         OrderPaymentOutboxAvro outbox = record.value();
-        ProcessedType processStage = ProcessedType.toStage(outbox.getProcessStage().toString());
+        ProcessType processType = ProcessType.toStage(outbox.getProcessStage().toString());
 
         log.info("outbox topic in payment = {}", outbox);
 
-        if(!processStage.equals(ProcessedType.ORDER))
+        if(!processType.equals(ProcessType.ORDER))
             return ;
 
         CompletableFuture.supplyAsync(() -> pay(stringToPaymentData(outbox.getPayload().toString())))
                 .thenApply(paymentResponse -> {
                     Query findQuery = new Query(Criteria.where("aggId").is(outbox.getAggId().toString()));
                     Update updateQuery = new Update().set("payload", paymentResponseToString(paymentResponse))
-                                    .set("processedType", ProcessedType.PAYMENT);
+                                    .set("processedType", ProcessType.PAYMENT);
                     mongoTemplate.updateFirst(findQuery, updateQuery, OrderPaymentOutbox.class);
 
-                    redisService.saveHash("order", outbox.getAggId().toString(), ProcessedType.PAYMENT);
+                    redisService.saveHash("order", outbox.getAggId().toString(), ProcessType.PAYMENT);
 
                     return paymentResponse;
                 })

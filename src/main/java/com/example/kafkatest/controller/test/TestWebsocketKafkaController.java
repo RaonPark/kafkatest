@@ -11,7 +11,7 @@ import com.example.kafkatest.repository.chat.ChatroomRepository;
 import com.example.kafkatest.repository.account.MemberRepository;
 import com.example.kafkatest.service.chat.ChatService;
 import com.example.kafkatest.service.RedisService;
-import com.example.kafkatest.support.ChatMessageType;
+import com.example.kafkatest.support.enums.ChatMessageType;
 import com.example.kafkatest.vo.MemberVo;
 import jakarta.transaction.Transactional;
 import lombok.*;

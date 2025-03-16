@@ -2,7 +2,7 @@ package com.example.kafkatest.entity.chat;
 
 import com.example.kafkatest.dto.request.chat.SendChatMessageRequest;
 import com.example.kafkatest.support.BaseUserEntity;
-import com.example.kafkatest.support.ChatMessageType;
+import com.example.kafkatest.support.enums.ChatMessageType;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;

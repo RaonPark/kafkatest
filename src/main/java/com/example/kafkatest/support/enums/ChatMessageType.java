@@ -1,4 +1,4 @@
-package com.example.kafkatest.support;
+package com.example.kafkatest.support.enums;
 
 public enum ChatMessageType {
     TEXT("T"),

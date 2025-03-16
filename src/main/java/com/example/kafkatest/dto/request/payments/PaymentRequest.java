@@ -1,9 +1,7 @@
 package com.example.kafkatest.dto.request.payments;
 
-import com.example.kafkatest.support.PaymentType;
+import com.example.kafkatest.support.enums.PaymentType;
 import lombok.Builder;
-
-import java.time.LocalDateTime;
 
 @Builder
 public record PaymentRequest(

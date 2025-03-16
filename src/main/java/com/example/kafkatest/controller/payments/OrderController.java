@@ -1,9 +1,10 @@
 package com.example.kafkatest.controller.payments;
 
+import com.example.kafkatest.dto.request.payments.OrderRequest;
 import com.example.kafkatest.dto.request.payments.PublishOrderRequest;
 import com.example.kafkatest.dto.response.payments.OrderResponse;
 import com.example.kafkatest.service.payments_service.OrderService;
-import com.example.kafkatest.service.problemsolving.OutboxService;
+import com.example.kafkatest.service.payments_service.OutboxService;
 import com.example.kafkatest.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,5 +87,10 @@ public class OrderController {
             return ResponseEntity.internalServerError().body(response);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/createNewOrder")
+    public ResponseEntity<OrderResponse> createNewOrder(@RequestBody OrderRequest orderRequest) {
+        return ResponseEntity.ok(null);
     }
 }

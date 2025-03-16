@@ -6,7 +6,7 @@ import com.example.kafkatest.dto.response.payments.CancelPaymentResponse;
 import com.example.kafkatest.dto.response.payments.PaymentResponse;
 import com.example.kafkatest.entity.payments.document.Payment;
 import com.example.kafkatest.service.payments_service.PaymentService;
-import com.example.kafkatest.support.PaymentType;
+import com.example.kafkatest.support.enums.PaymentType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

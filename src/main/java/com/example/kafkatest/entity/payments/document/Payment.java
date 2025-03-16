@@ -1,6 +1,6 @@
 package com.example.kafkatest.entity.payments.document;
 
-import com.example.kafkatest.support.PaymentType;
+import com.example.kafkatest.support.enums.PaymentType;
 import com.mongodb.lang.Nullable;
 import lombok.Builder;
 import lombok.Data;

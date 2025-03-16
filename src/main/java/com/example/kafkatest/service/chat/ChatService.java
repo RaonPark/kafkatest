@@ -12,7 +12,7 @@ import com.example.kafkatest.repository.chat.ChatMessageRepository;
 import com.example.kafkatest.repository.chat.ChatroomMemberRepository;
 import com.example.kafkatest.repository.chat.ChatroomRepository;
 import com.example.kafkatest.service.RedisService;
-import com.example.kafkatest.support.ChatMessageType;
+import com.example.kafkatest.support.enums.ChatMessageType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

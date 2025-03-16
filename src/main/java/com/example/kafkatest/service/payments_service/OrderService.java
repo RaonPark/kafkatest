@@ -7,12 +7,11 @@ import com.example.kafkatest.dto.request.payments.PaymentRequest;
 import com.example.kafkatest.dto.response.payments.CancelAllOrderResponse;
 import com.example.kafkatest.dto.response.payments.CancelPartialOrderResponse;
 import com.example.kafkatest.dto.response.payments.OrderResponse;
-import com.example.kafkatest.entity.payments.document.OrderPaymentOutbox;
-import com.example.kafkatest.entity.payments.document.Orders;
-import com.example.kafkatest.entity.payments.document.ReceiptSellerInfo;
-import com.example.kafkatest.entity.payments.document.Sellers;
+import com.example.kafkatest.dto.response.payments.PaymentResponse;
+import com.example.kafkatest.entity.payments.document.*;
 import com.example.kafkatest.service.RedisService;
-import com.example.kafkatest.support.ProcessedType;
+import com.example.kafkatest.support.enums.ProcessStage;
+import com.example.kafkatest.support.enums.ProcessType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.result.DeleteResult;
@@ -20,6 +19,7 @@ import com.mongodb.client.result.UpdateResult;
 import com.raonpark.OrderPaymentOutboxAvro;
 import com.raonpark.PaymentData;
 import com.raonpark.RevenueData;
+import com.raonpark.avro.PaymentOutboxMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -28,6 +28,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -93,12 +94,14 @@ public class OrderService {
                 .thenApply(savedOrder -> {
                     String payload = paymentDataToString(payment);
 
+
                     OrderPaymentOutbox orderPaymentOutbox = OrderPaymentOutbox.builder()
                             .aggId(String.valueOf(aggId))
                             .payload(payload)
-                            .processedType(ProcessedType.ORDER)
+                            .processType(ProcessType.ORDER)
                             .build();
                     mongoTemplate.save(orderPaymentOutbox);
+
 
                     return savedOrder;
                 });
@@ -129,11 +132,11 @@ public class OrderService {
         if(retries == -1)
             return false;
         log.info("Process Stage를 기다리는 중 : id = {} retries = {}", aggId, retries);
-        ProcessedType processStage = Optional.ofNullable(
-                redisService.findHash("order", String.valueOf(aggId), ProcessedType.class))
-                .orElse(ProcessedType.NOT_PROCESSED);
+        ProcessType processType = Optional.ofNullable(
+                redisService.findHash("order", String.valueOf(aggId), ProcessType.class))
+                .orElse(ProcessType.NOT_PROCESSED);
 
-        if(processStage.equals(ProcessedType.PAYMENT) || processStage.equals(ProcessedType.TOTAL_REVENUE)) {
+        if(processType.equals(ProcessType.PAYMENT) || processType.equals(ProcessType.TOTAL_REVENUE)) {
             return true;
         }
 
@@ -149,10 +152,10 @@ public class OrderService {
     @KafkaListener(topics = {"order-payment-outbox.topic"}, containerFactory = "orderPaymentOutboxConcurrentKafkaListenerContainerFactory")
     public void consumeOrder(ConsumerRecord<String, OrderPaymentOutboxAvro> record) {
         OrderPaymentOutboxAvro outbox = record.value();
-        ProcessedType processStage = ProcessedType.toStage(outbox.getProcessStage().toString());
-        if(processStage.equals(ProcessedType.PAYMENT) || processStage.equals(ProcessedType.TOTAL_REVENUE)) {
+        ProcessType processType = ProcessType.toStage(outbox.getProcessStage().toString());
+        if(processType.equals(ProcessType.PAYMENT) || processType.equals(ProcessType.TOTAL_REVENUE)) {
             log.info("process 가 완료되어 레디스에 완료를 함 = {}", outbox);
-            redisService.saveHash("order", outbox.getAggId().toString(), processStage);
+            redisService.saveHash("order", outbox.getAggId().toString(), processType);
         }
     }
 
@@ -198,6 +201,45 @@ public class OrderService {
         return order.products().stream().map(products -> products.price() * products.quantity())
                 .reduce(Long::sum)
                 .orElse(0L);
+    }
+
+    public OrderResponse createNewOrder(OrderRequest orderRequest, PaymentRequest paymentRequest, long aggId) {
+        String orderNumber = generateOrderNumber(orderRequest);
+        String orderedTime = Instant.now().atZone(ZoneId.of("Asia/Seoul")).toString();
+        Orders orders = new Orders(orderNumber, orderedTime, orderRequest.products(), orderRequest.sellerId());
+
+        CompletableFuture<Orders> createdOrderFuture = CompletableFuture.supplyAsync(() -> mongoTemplate.save(orders))
+                .thenApply(savedOrder -> {
+                    String paymentPayload = paymentDataToString(paymentRequest);
+                    OrderOutbox orderOutbox = OrderOutbox.builder()
+                            .aggId(String.valueOf(aggId))
+                            .processStage(ProcessStage.PROCESSED)
+                            .payload(paymentPayload)
+                            .build();
+
+                    mongoTemplate.save(orderOutbox);
+
+                    return savedOrder;
+                });
+
+        Query findSellerQuery = new Query(Criteria.where("sellerId").is(orderRequest.sellerId()));
+        Sellers seller = Optional.ofNullable(mongoTemplate.findOne(findSellerQuery, Sellers.class))
+                .orElseThrow(() -> new RuntimeException(orderRequest.sellerId() + "에 해당하는 판매자가 없습니다."));
+
+        Orders createdOrder = createdOrderFuture.join();
+
+        ReceiptSellerInfo sellerInfo = ReceiptSellerInfo.builder()
+                .address(seller.getAddress())
+                .telephone(seller.getTelephone())
+                .businessName(seller.getBusinessName())
+                .build();
+
+        return OrderResponse.builder()
+                .orderedTime(createdOrder.getOrderedTime())
+                .orderNumber(createdOrder.getOrderNumber())
+                .products(createdOrder.getProducts())
+                .sellerInfo(sellerInfo)
+                .build();
     }
 
     public CancelAllOrderResponse cancelAllOrder(CancelAllOrderRequest cancelOrder) {

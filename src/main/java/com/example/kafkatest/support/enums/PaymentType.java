@@ -1,4 +1,4 @@
-package com.example.kafkatest.support;
+package com.example.kafkatest.support.enums;
 
 import java.util.Arrays;
 
